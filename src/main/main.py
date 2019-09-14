@@ -965,7 +965,7 @@ else:
 
 
 
-def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
+def main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice):
 
     # Determine my strategy this hand
     my_hands_cat1_0b = my_hands_cat1_level_x_and_above(8)  # Always 8
@@ -1523,10 +1523,10 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
     if profit < last_profit and profit_became_worse:
         profit_became_worse_twice = True
         last_profit = profit
-        return profit_became_worse_twice, profits, max_profit
     elif profit < last_profit:
         profit_became_worse = True
 
+    return profit_became_worse_twice, profit_became_worse, profits, max_profit
 
     # pot_size = 6.5
     # my_investment = 2.5
@@ -1551,8 +1551,8 @@ for cat3_level_0b in range(0, 20):
     cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
     # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
+    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
+        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
 
     if profit_became_worse_twice:
         break
@@ -1571,8 +1571,8 @@ for new_cat3_level_1b in range(cat3_level_1b-1, 20):
     cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
     # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
+    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
+        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
 
     if profit_became_worse_twice:
         break
@@ -1591,14 +1591,17 @@ for new_cat3_level_2b in range(cat3_level_2b-1, 20):
     cat3_level_2b = new_cat3_level_2b
 
     # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
+    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
+        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
 
     if profit_became_worse_twice:
         break
 
 print(profits)
 df = pd.DataFrame(profits)
+df['rank1'] = flop[0]
+df['rank2'] = flop[1]
+df['rank3'] = flop[2]
 print(df)
 df.to_csv("results.csv")
 
