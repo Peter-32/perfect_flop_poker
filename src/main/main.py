@@ -653,957 +653,977 @@ def get_opponent_situation(bets):
 
 #####
 
+flops = []
+for rank1 in range(14,1,-1):
+    for rank2 in range(14,1,-1):
+        for rank3 in range(14,1,-1):
+            if rank1 >= rank2 and rank2 >= rank3:
+                flops.append([rank1, rank2, rank3])
 
 
-
-# Focus on one flop for now, later iterate through all of them
-flop = [11,6,3]
-
-# Focus on one range for now, later iterate through all of them
-range_name = "CO RFI vs BN call"
-my_range = co_rfi
-opponents_range = vsRFI_bn_vs_co__call
-my_position_ip = False
-opponent_pfr = False
-pot_size = 6.5
-my_investment = 2.5
-board_type = "two-tone" # two-tone (65%), rainbow (30%), monotone (5%)
-
-
-# Interim variables
-my_hands = range_to_hands(my_range)
-opponents_hands = range_to_hands(opponents_range)
-is_paired = 1 if flop[0] == flop[1] or flop[1] == flop[2] else 0
-paired_value = 0 if not is_paired else flop[0] if flop[0] == flop[1] else flop[1]
-
-# Check for invalid flop + board type
-if board_type == "monotone" and is_paired:
-    raise Exception
-if board_type == "two-tone" and flop[0] == flop[2]:
-    raise Exception
-
-opponent_unraised_strategy = {
-    'cat1': {1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9},
-    'cat2': {1: 2, 2: 5, 3: 6, 4: 6, 5: 7, 6: 7, 7: 7},
-    'cat3': {1: 16 if opponent_pfr else 3,
-             2: 16 if opponent_pfr else 3,
-             3: 16 if opponent_pfr else 3,
-             4: 16 if opponent_pfr else 3,
-             5: 16 if opponent_pfr else 3,
-             6: 16 if opponent_pfr else 3,  # Opponent is way more bluff-heavy when the pfr; semi-good for them.
-             7: 16 if opponent_pfr else 3}, # skipping 4-10 for opponent's strategy (default in their strat)
-}
-opponent_strategy = {
-    "oop_open": opponent_unraised_strategy,
-    "oop_vs_cb": opponent_raised_strategy,
-    "oop_vs_br": opponent_reraised_strategy,
-    "ip_vs_c": opponent_unraised_strategy,
-    "ip_vs_b": opponent_raised_strategy,
-    "ip_vs_cbr": opponent_reraised_strategy,
-}
-
-
-
-
-
-# Important note: lower ranked rules may include higher ranked hands
-    # Also tp_j_kicker includes trips because it's okay that it does because of the theory:
-    # actions taken by one hand are taken by all better hands within the cat
-    # ! Just be careful that you remove cat1 hands from final cat2, same with cat3 with both cat1 & 2
-    # Might want to QA with a hand matrix coloring compare with the existing matrix based on default rules
-
-# Cat1
-#### Assuming no flushes (monotone boards) for simplicity
-my_hands_s_straight = [] if is_paired else [(x, 4) for x in my_hands[1] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
-my_hands_o_straight = [] if is_paired else [(x, 12) for x in my_hands[2] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
-my_hands_pp_sets = [(x, 3) for x in my_hands[0] if x[0] in flop]
-my_hands_s_trips = [] if not is_paired else [(x, 2) for x in my_hands[1] if x[0] == paired_value or x[1] == paired_value]
-my_hands_o_trips = [] if not is_paired else [(x, 6) for x in my_hands[2] if x[0] == paired_value or x[1] == paired_value]
-# 2 combos most times, not 3; 7 more often than 6
-my_hands_s_two_pair = [] if is_paired else [(x, 2) for x in my_hands[1] if x[0] in flop and x[1] in flop]
-my_hands_o_two_pair = [] if is_paired else [(x, 7) for x in my_hands[2] if x[0] in flop and x[1] in flop]
-my_hands_pp_overpair_9plus = [(x, 6) for x in my_hands[0] if x[0] > flop[0] and x[0] >= 9]
-my_hands_pp_any_overpair = [(x, 6) for x in my_hands[0] if x[0] > flop[0]]
-my_hands_s_tp_k_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
-my_hands_o_tp_k_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
-my_hands_s_tp_j_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
-my_hands_o_tp_j_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
-my_hands_s_tp_any_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-my_hands_o_tp_any_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-
-# Cat2 (flushdraws with high card hand might actually be part of cat3, but saying the combos are part of cat2)
-my_hands_s_tp_bad_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-my_hands_o_tp_bad_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-my_hands_s_middle_pair = [(x, 3) for x in my_hands[1] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
-my_hands_o_middle_pair = [(x, 9) for x in my_hands[2] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
-my_hands_s_bottom_pair = [(x, 3) for x in my_hands[1] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
-my_hands_o_bottom_pair = [(x, 9) for x in my_hands[2] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
-my_hands_pp_below_top_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[0] and x[0] > flop[1]]
-my_hands_s_aj_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
-my_hands_o_aj_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
-my_hands_pp_below_middle_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[1] and x[0] > flop[2]]
-my_hands_s_kq_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
-my_hands_o_kq_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
-my_hands_pp_below_bottom_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[2]]
-my_hands_s_kj_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
-my_hands_o_kj_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
-my_hands_s_k8_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
-my_hands_o_k8_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
-
-# Cat3 paired
-#### bdfd/fd/no_fd combos should not be counted twice; combine them smartly and carefully.
-#### Assuming no suited flushdraw possible with pair on two-tone for simplicity
-#### Might say a straight is a gutshot but that is fine because future logic
-## Include the combos for that hand
-if board_type == "two-tone":
-    my_hands_pp_fd = []
-    my_hands_s_fd = [(x, 1) for x in my_hands[1] if x[0] not in flop and x[1] not in flop]
-    my_hands_o_fd = []
-elif board_type == "rainbow":
-    my_hands_pp_fd = []
-    my_hands_s_fd = []
-    my_hands_o_fd = []
-else:
-    my_hands_pp_fd = [(x, 3) for x in my_hands[0] if x[0] not in flop]
-    my_hands_s_fd = []
-    # If paired then ignore the flushdraw (anyway, just monotone; just makes things simpler)
-    my_hands_o_fd = [(x, 6) for x in my_hands[2] if x[0] not in flop and x[1] not in flop]
-#### Also added double gutshots.  Doing a bit of overcounting for oesd+pair, which is fine for estimation (should be 9).
-my_hands_pp_oesd = [(x, 6) for x in my_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-my_hands_s_oesd = [(x, 4) for x in my_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-my_hands_o_oesd = [(x, 12) for x in my_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-my_hands_pp_gutshot = [(x, 6) for x in my_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-my_hands_s_gutshot = [(x, 4) for x in my_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-my_hands_o_gutshot = [(x, 12) for x in my_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-#### Additional rule: 3 to a straight requires two cards from your hand not just one (that's how I want it to be)
-my_hands_s_3_to_straight_not_all_from_low_end = [(x, 4) for x in my_hands[1] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
-my_hands_o_3_to_straight_not_all_from_low_end = [(x, 12) for x in my_hands[2] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
-if board_type == "two-tone":
-    my_hands_s_3_to_straight_low_end_bdfd = [(x, 1) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    my_hands_o_3_to_straight_low_end_bdfd = [(x, 6) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-elif board_type == "rainbow":
-    my_hands_s_3_to_straight_low_end_bdfd = [(x, 3) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    my_hands_o_3_to_straight_low_end_bdfd = []
-else:
-    my_hands_s_3_to_straight_low_end_bdfd = []
-    my_hands_o_3_to_straight_low_end_bdfd = []
-if board_type == "two-tone":
-    my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-elif board_type == "rainbow":
-    my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-else:
-    my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-if board_type == "two-tone":
-    my_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-    my_hands_o_5_unique_cards_within_7_values_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-elif board_type == "rainbow":
-    my_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-    my_hands_o_5_unique_cards_within_7_values_bdfd = []
-else:
-    my_hands_s_5_unique_cards_within_7_values_bdfd = []
-    my_hands_o_5_unique_cards_within_7_values_bdfd = []
-if board_type == "two-tone":
-    my_hands_pp_q_minus_bdfd = [(x, 3) for x in my_hands[0] if (x[0] not in flop) and x[0] <= 12]
-    my_hands_s_q_minus_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-    my_hands_o_q_minus_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-elif board_type == "rainbow":
-    my_hands_pp_q_minus_bdfd = []
-    my_hands_s_q_minus_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-    my_hands_o_q_minus_bdfd = []
-else:
-    my_hands_pp_q_minus_bdfd = []
-    my_hands_s_q_minus_bdfd = []
-    my_hands_o_q_minus_bdfd = []
-#### 3 cards within 4 values with two overcards
-my_hands_s_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 4) for x in my_hands[1] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
-my_hands_o_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 12) for x in my_hands[2] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
-if board_type == "two-tone":
-    my_hands_pp_a_minus_bdfd = [(x, 3) for x in my_hands[0] if (x[0] not in flop) and x[0] > 12 and x[0] <= 14]
-    my_hands_s_a_minus_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-    my_hands_o_a_minus_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-elif board_type == "rainbow":
-    my_hands_pp_a_minus_bdfd = []
-    my_hands_s_a_minus_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-    my_hands_o_a_minus_bdfd = []
-else:
-    my_hands_pp_a_minus_bdfd = []
-    my_hands_s_a_minus_bdfd = []
-    my_hands_o_a_minus_bdfd = []
-
-
-
-
-# Important note: lower ranked rules may include higher ranked hands
-    # Also tp_j_kicker includes trips because it's okay that it does because of the theory:
-    # actions taken by one hand are taken by all better hands within the cat
-    # ! Just be careful that you remove cat1 hands from final cat2, same with cat3 with both cat1 & 2
-    # Might want to QA with a hand matrix coloring compare with the existing matrix based on default rules
-
-# Cat1
-#### Assuming no flushes (monotone boards) for simplicity
-opponents_hands_s_straight = [] if is_paired else [(x, 4) for x in opponents_hands[1] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
-opponents_hands_o_straight = [] if is_paired else [(x, 12) for x in opponents_hands[2] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
-opponents_hands_pp_sets = [(x, 3) for x in opponents_hands[0] if x[0] in flop]
-opponents_hands_s_trips = [] if not is_paired else [(x, 2) for x in opponents_hands[1] if x[0] == paired_value or x[1] == paired_value]
-opponents_hands_o_trips = [] if not is_paired else [(x, 6) for x in opponents_hands[2] if x[0] == paired_value or x[1] == paired_value]
-# 2 combos most times, not 3; 7 more often than 6
-opponents_hands_s_two_pair = [] if is_paired else [(x, 2) for x in opponents_hands[1] if x[0] in flop and x[1] in flop]
-opponents_hands_o_two_pair = [] if is_paired else [(x, 7) for x in opponents_hands[2] if x[0] in flop and x[1] in flop]
-opponents_hands_pp_overpair_9plus = [(x, 6) for x in opponents_hands[0] if x[0] > flop[0] and x[0] >= 9]
-opponents_hands_pp_any_overpair = [(x, 6) for x in opponents_hands[0] if x[0] > flop[0]]
-opponents_hands_s_tp_k_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
-opponents_hands_o_tp_k_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
-opponents_hands_s_tp_j_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
-opponents_hands_o_tp_j_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
-opponents_hands_s_tp_any_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-opponents_hands_o_tp_any_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-
-# Cat2 (flushdraws with high card hand might actually be part of cat3, but saying the combos are part of cat2)
-opponents_hands_s_tp_bad_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-opponents_hands_o_tp_bad_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
-opponents_hands_s_middle_pair = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
-opponents_hands_o_middle_pair = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
-opponents_hands_s_bottom_pair = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
-opponents_hands_o_bottom_pair = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
-opponents_hands_pp_below_top_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[0] and x[0] > flop[1]]
-opponents_hands_s_aj_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
-opponents_hands_o_aj_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
-opponents_hands_pp_below_middle_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[1] and x[0] > flop[2]]
-opponents_hands_s_kq_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
-opponents_hands_o_kq_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
-opponents_hands_pp_below_bottom_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[2]]
-opponents_hands_s_kj_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
-opponents_hands_o_kj_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
-opponents_hands_s_k8_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
-opponents_hands_o_k8_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
-
-# Cat3 paired
-#### bdfd/fd/no_fd combos should not be counted twice; combine them smartly and carefully.
-#### Assuming no suited flushdraw possible with pair on two-tone for simplicity
-#### Might say a straight is a gutshot but that is fine because future logic
-## Include the combos for that hand
-if board_type == "two-tone":
-    opponents_hands_pp_fd = []
-    opponents_hands_s_fd = [(x, 1) for x in opponents_hands[1] if x[0] not in flop and x[1] not in flop]
-    opponents_hands_o_fd = []
-elif board_type == "rainbow":
-    opponents_hands_pp_fd = []
-    opponents_hands_s_fd = []
-    opponents_hands_o_fd = []
-else:
-    opponents_hands_pp_fd = [(x, 3) for x in opponents_hands[0] if x[0] not in flop]
-    opponents_hands_s_fd = []
-    # If paired then ignore the flushdraw (anyway, just monotone; just makes things simpler)
-    opponents_hands_o_fd = [(x, 6) for x in opponents_hands[2] if x[0] not in flop and x[1] not in flop]
-#### Also added double gutshots.  Doing a bit of overcounting for oesd+pair, which is fine for estimation (should be 9).
-opponents_hands_pp_oesd = [(x, 6) for x in opponents_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-opponents_hands_s_oesd = [(x, 4) for x in opponents_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-opponents_hands_o_oesd = [(x, 12) for x in opponents_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
-opponents_hands_pp_gutshot = [(x, 6) for x in opponents_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-opponents_hands_s_gutshot = [(x, 4) for x in opponents_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-opponents_hands_o_gutshot = [(x, 12) for x in opponents_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
-#### Additional rule: 3 to a straight requires two cards from your hand not just one (that's how I want it to be)
-opponents_hands_s_3_to_straight_not_all_from_low_end = [(x, 4) for x in opponents_hands[1] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
-opponents_hands_o_3_to_straight_not_all_from_low_end = [(x, 12) for x in opponents_hands[2] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
-if board_type == "two-tone":
-    opponents_hands_s_3_to_straight_low_end_bdfd = [(x, 1) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    opponents_hands_o_3_to_straight_low_end_bdfd = [(x, 6) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-elif board_type == "rainbow":
-    opponents_hands_s_3_to_straight_low_end_bdfd = [(x, 3) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    opponents_hands_o_3_to_straight_low_end_bdfd = []
-else:
-    opponents_hands_s_3_to_straight_low_end_bdfd = []
-    opponents_hands_o_3_to_straight_low_end_bdfd = []
-if board_type == "two-tone":
-    opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-elif board_type == "rainbow":
-    opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-else:
-    opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-    opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
-if board_type == "two-tone":
-    opponents_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-    opponents_hands_o_5_unique_cards_within_7_values_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-elif board_type == "rainbow":
-    opponents_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
-    opponents_hands_o_5_unique_cards_within_7_values_bdfd = []
-else:
-    opponents_hands_s_5_unique_cards_within_7_values_bdfd = []
-    opponents_hands_o_5_unique_cards_within_7_values_bdfd = []
-if board_type == "two-tone":
-    opponents_hands_pp_q_minus_bdfd = [(x, 3) for x in opponents_hands[0] if (x[0] not in flop) and x[0] <= 12]
-    opponents_hands_s_q_minus_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-    opponents_hands_o_q_minus_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-elif board_type == "rainbow":
-    opponents_hands_pp_q_minus_bdfd = []
-    opponents_hands_s_q_minus_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
-    opponents_hands_o_q_minus_bdfd = []
-else:
-    opponents_hands_pp_q_minus_bdfd = []
-    opponents_hands_s_q_minus_bdfd = []
-    opponents_hands_o_q_minus_bdfd = []
-#### 3 cards within 4 values with two overcards
-opponents_hands_s_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 4) for x in opponents_hands[1] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
-opponents_hands_o_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 12) for x in opponents_hands[2] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
-if board_type == "two-tone":
-    opponents_hands_pp_a_minus_bdfd = [(x, 3) for x in opponents_hands[0] if (x[0] not in flop) and x[0] > 12 and x[0] <= 14]
-    opponents_hands_s_a_minus_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-    opponents_hands_o_a_minus_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-elif board_type == "rainbow":
-    opponents_hands_pp_a_minus_bdfd = []
-    opponents_hands_s_a_minus_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
-    opponents_hands_o_a_minus_bdfd = []
-else:
-    opponents_hands_pp_a_minus_bdfd = []
-    opponents_hands_s_a_minus_bdfd = []
-    opponents_hands_o_a_minus_bdfd = []
-
-
-
-def main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice):
-
-    # Determine my strategy this hand
-    my_hands_cat1_0b = my_hands_cat1_level_x_and_above(8)  # Always 8
-
-    # If IP + (flop type 6 or 7 or PFR)
-    if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
-        my_hands_cat2_0b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_0b)
-    else:
-        my_hands_cat2_0b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_0b)
-    my_hands_cat3_0b = None
-
-
-    # # Removed because these constraints are unprofitable as of now
-    # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_0b_lb = sum([y for (x,y) in my_hands_cat1_0b[0]])+sum([y for (x,y) in my_hands_cat1_0b[1]])+sum([y for (x,y) in my_hands_cat1_0b[2]])
-    # cat3_combos_0b_ub = cat3_combos_0b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21
-    #
-    # # Find bounds
-    # cat3_combos = 0
-    # for i in range(20):
-    #     if cat3_combos >= cat3_combos_0b_lb:
-    #         break
-    #     else:
-    #         my_cat3_level_lb += 1
-    #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_0b, my_hands_cat2_0b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
-    #
-    # cat3_combos = 400
-    # for i in range(20):
-    #     if cat3_combos <= cat3_combos_0b_ub:
-    #         break
-    #     else:
-    #         my_cat3_level_ub -= 1
-    #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_0b, my_hands_cat2_0b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
-
-    # Print bounds
-    # print("0b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("0b: my_cat3_level_ub", my_cat3_level_ub)
-
-    my_hands_cat3_0b = my_hands_cat3_level_x_and_above(cat3_level_0b, my_hands_cat1_0b, my_hands_cat2_0b)
-
-
-
-
-
-    # Determine my strategy this hand
-    my_hands_cat1_1b = my_hands_cat1_level_x_and_above(6)
-    if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
-        my_hands_cat2_1b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_1b)
-    else:
-        my_hands_cat2_1b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_1b)
-    my_hands_cat3_1b = None
-
-    # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_1b_lb = sum([y for (x,y) in my_hands_cat1_1b[0]])+sum([y for (x,y) in my_hands_cat1_1b[1]])+sum([y for (x,y) in my_hands_cat1_1b[2]])
-    # cat3_combos_1b_ub = cat3_combos_1b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21
-    #
-    # # Find bounds
-    # cat3_combos = 0
-    # for i in range(20):
-    #     if cat3_combos >= cat3_combos_1b_lb:
-    #         break
-    #     else:
-    #         my_cat3_level_lb += 1
-    #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_1b, my_hands_cat2_1b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
-    #
-    # cat3_combos = 400
-    # for i in range(20):
-    #     if cat3_combos <= cat3_combos_1b_ub:
-    #         break
-    #     else:
-    #         my_cat3_level_ub -= 1
-    #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_1b, my_hands_cat2_1b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
-
-    # Print bounds
-    # print("1b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("1b: my_cat3_level_ub", my_cat3_level_ub)
-
-    my_hands_cat3_1b = my_hands_cat3_level_x_and_above(cat3_level_1b, my_hands_cat1_1b, my_hands_cat2_1b)
-
-
-
-
-
-
-    # Determine my strategy this hand
-    my_hands_cat1_2b = my_hands_cat1_level_x_and_above(0)
-    my_hands_cat2_2b = my_hands_cat2_level_x_and_above(3, my_hands_cat1_2b)
-    my_hands_cat3_2b = None
-
-    # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_2b_lb = sum([y for (x,y) in my_hands_cat1_2b[0]])+sum([y for (x,y) in my_hands_cat1_2b[1]])+sum([y for (x,y) in my_hands_cat1_2b[2]])
-    # cat3_combos_2b_ub = cat3_combos_2b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21  # Can lower this to something like 10 or lower once experimenting on a few hands
-    # # We are just calling with our cat3 hands
-
-    # Print bounds
-    # print("2b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("2b: my_cat3_level_ub", my_cat3_level_ub)
-
-
-
-
-
-    my_hands_cat3_2b = my_hands_cat3_level_x_and_above(cat3_level_2b, my_hands_cat1_2b, my_hands_cat2_2b)
-
-
-
-
-
-
-    # Changing variable
-    bets_so_far = 0 # might delete this variable
-
-    # Determine my bet size
-    my_bet_size = \
-        0.4 if is_paired else \
-        0.6 if board_type == "rainbow" and flop[0] - flop[1] >= 5 else \
-        0.8 if board_type != "rainbow" and flop[0] - flop[1] <= 4 else \
-        0.7
-
-    # Determine my opponent's strategy this hand
-    #### Identify which of the 8 flops this is to decide the opponent's strategy they will use
-    flop_type_number = get_flop_type_number()
-    opponents_hands_cat1_0b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(0)]["cat1"][flop_type_number])
-    opponents_hands_cat2_0b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(0)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_0b) # they are wider IP, but not wider than 7
-    opponents_hands_cat3_0b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(0)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_0b, opponents_hands_cat2_0b) # they are wider IP
-    opponents_hands_cat1_1b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(1)]["cat1"][flop_type_number])
-    opponents_hands_cat2_1b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(1)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_1b) # they are wider IP, but not wider than 7
-    opponents_hands_cat3_1b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(1)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_1b, opponents_hands_cat2_1b) # they are wider IP
-    opponents_hands_cat1_2b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(2)]["cat1"][flop_type_number])
-    opponents_hands_cat2_2b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(2)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_2b) # they are wider IP, but not wider than 7
-    opponents_hands_cat3_2b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(2)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_2b, opponents_hands_cat2_2b) # they are wider IP
-
-    # Determine opponent's bet size:
-    opponents_bet_size = 0.60
-
-
-
-
-
-    opponents_hands_with_combos = [[], [], []]
-    opponents_hands_with_combos[0] = [(x, 6) if x[0] not in flop else (x, 3) for x in opponents_hands[0]]
-    opponents_hands_with_combos[1] = [(x, 4) if x[0] not in flop and x[1] not in flop else (x, 2) if x[0] in flop and x[1] in flop else (x,3) for x in opponents_hands[1]]
-    opponents_hands_with_combos[2] = [(x, 12) if x[0] not in flop and x[1] not in flop else (x, 7) if x[0] in flop and x[1] in flop else (x,9) for x in opponents_hands[2]]
-
-    def count_hand_combos(hands):
-        return sum([y for (x,y) in hands[0]])+sum([y for (x,y) in hands[1]])+sum([y for (x,y) in hands[2]])
-
-    def get_check_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action):
-        hands = [[], [], []]
-        temp_cat3_hands = deepcopy(cat3_hands_for_action)
-
-        # Flip sign (for subtraction)
-        for i in range(3):
-            temp_cat3_hands[i] = [(x, -1*y) for (x, y) in temp_cat3_hands[i]]
-
-        # Combine (for subtraction)
-        result = combine_hands(all_hands_before_action_w_combos, temp_cat3_hands)
-
-        # Subtraction
-        for i in range(3):
-            groupby_dict = defaultdict(int)
-            for val in result[i]:
-                groupby_dict[tuple(val[0])] += val[1]
-            result[i] = [(sorted(list(x), reverse=True), max(0, min(y, 6 if i == 0 else 4 if i == 1 else 12))) for (x,y) in groupby_dict.items()]
-            result[i] = [(x,y) for (x,y) in result[i] if y != 0 and x not in [x for (x,y) in cat1_hands_for_action[i]]]
-        return result
-
-    def get_fold_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat2_hands_for_action, cat3_hands_for_action):
-        hands = get_check_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action)
-        for i in range(3):
-            hands[i] = [(x,y) for (x,y) in hands[i] if x not in [x for (x,y) in cat2_hands_for_action[i]]]
-        return hands
-
-    def get_call_hands(all_hands_before_action_w_combos, cat2_hands_for_action):
-        hands = deepcopy(cat2_hands_for_action)
-        for i in range(3):
-            hands[i] = [(x,y) for (x,y) in hands[i] if x in [x for (x,y) in all_hands_before_action_w_combos[i]]]
-        return hands
-
-    def get_raise_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action):
-        hands = combine_hands(cat1_hands_for_action, cat3_hands_for_action)
-        for i in range(3):
-            hands[i] = [(x,y) for (x,y) in hands[i] if x in [x for (x,y) in all_hands_before_action_w_combos[i]]]
-        return hands
-
-    def combine_hands(hands1, hands2):
-        hands = [[], [], []]
-        for i in range(3):
-            hands[i] = hands1[i] + hands2[i]
-        return hands
-
-
-
-
-    my_hands_with_combos = [[], [], []]
-    my_hands_with_combos[0] = [(x, 6) if x[0] not in flop else (x, 3) for x in my_hands[0]]
-    my_hands_with_combos[1] = [(x, 4) if x[0] not in flop and x[1] not in flop else (x, 2) if x[0] in flop and x[1] in flop else (x,3) for x in my_hands[1]]
-    my_hands_with_combos[2] = [(x, 12) if x[0] not in flop and x[1] not in flop else (x, 7) if x[0] in flop and x[1] in flop else (x,9) for x in my_hands[2]]
-
-
-
-
-
-
-
-    # Determine:
-    #### 0) Hands in each situation
-    if my_position_ip:
-        pass
-    else:
-        # Hands
-        my_hands_c = get_check_hands(my_hands_with_combos, my_hands_cat1_0b, my_hands_cat3_0b)
-        my_hands_b = combine_hands(my_hands_cat1_0b, my_hands_cat3_0b)
-        opponents_hands_cc = get_check_hands(opponents_hands_with_combos, opponents_hands_cat1_0b, opponents_hands_cat3_0b)
-        opponents_hands_cb = combine_hands(opponents_hands_cat1_0b, opponents_hands_cat3_0b)
-        opponents_hands_bf = get_fold_hands(opponents_hands_with_combos, opponents_hands_cat1_1b, opponents_hands_cat2_1b, opponents_hands_cat3_1b)
-        opponents_hands_bc = opponents_hands_cat2_1b
-        opponents_hands_bb = combine_hands(opponents_hands_cat1_1b, opponents_hands_cat3_1b)
-        my_hands_cbf = get_fold_hands(my_hands_c, my_hands_cat1_1b, my_hands_cat2_1b, my_hands_cat3_1b)
-        my_hands_cbc = get_call_hands(my_hands_c, my_hands_cat2_1b)
-        my_hands_cbb = get_raise_hands(my_hands_c, my_hands_cat1_1b, my_hands_cat3_1b)
-        my_hands_bbf = get_fold_hands(my_hands_b, my_hands_cat1_2b, my_hands_cat2_2b, my_hands_cat3_2b)
-        my_hands_bbc = get_call_hands(my_hands_b, combine_hands(my_hands_cat2_2b, my_hands_cat3_2b)) # cat3 is a call
-        opponents_hands_cbbf = get_fold_hands(opponents_hands_cb, opponents_hands_cat1_2b, opponents_hands_cat2_2b, opponents_hands_cat3_2b)
-        opponents_hands_cbbc = get_call_hands(opponents_hands_cb, combine_hands(opponents_hands_cat2_2b, opponents_hands_cat3_2b)) # cat3 is a call
-
-        # Combos
-        combos_c = count_hand_combos(my_hands_c)
-        combos_b = count_hand_combos(my_hands_b)
-        combos_cc = count_hand_combos(opponents_hands_cc)
-        combos_cb = count_hand_combos(opponents_hands_cb)
-        combos_bf = count_hand_combos(opponents_hands_bf)
-        combos_bc = count_hand_combos(opponents_hands_bc)
-        combos_bb = count_hand_combos(opponents_hands_bb)
-        combos_cbf = count_hand_combos(my_hands_cbf)
-        combos_cbc = count_hand_combos(my_hands_cbc)
-        combos_cbb = count_hand_combos(my_hands_cbb)
-        combos_bbf = count_hand_combos(my_hands_bbf)
-        combos_bbc = count_hand_combos(my_hands_bbc)
-        combos_cbbf = count_hand_combos(opponents_hands_cbbf)
-        combos_cbbc = count_hand_combos(opponents_hands_cbbc)
-
-        # Cat3 pct_makeup
-        my_cat3_pct_cc = 0
-        my_cat3_pct_cbc = 0
-        my_cat3_pct_cbbc = 0 if combos_cbb == 0 else count_hand_combos(get_raise_hands(my_hands_c, [[],[],[]], my_hands_cat3_1b)) / combos_cbb
-        my_cat3_pct_bc = 0 if combos_b == 0 else count_hand_combos(my_hands_cat3_0b) / combos_b
-        my_cat3_pct_bbc = 0 if combos_bbc == 0 else count_hand_combos(get_raise_hands(my_hands_b, [[],[],[]], my_hands_cat3_2b)) / combos_bbc
-
-        opponents_cat3_pct_cc = 0
-        opponents_cat3_pct_cbc = 0 if combos_cb == 0 else count_hand_combos(opponents_hands_cat3_0b) / combos_cb
-        opponents_cat3_pct_cbbc = 0 if combos_cbbc == 0 else count_hand_combos(get_raise_hands(opponents_hands_cb, [[],[],[]], opponents_hands_cat3_2b)) / combos_cbbc
-        opponents_cat3_pct_bc = 0
-        opponents_cat3_pct_bbc = 0 if combos_bb == 0 else count_hand_combos(opponents_hands_cat3_1b) / combos_bb
-
-
-    #### 1) the % chance of each bet sequence
-    if my_position_ip:
-        pass
-    else:
-        chance_c = combos_c/(combos_c + combos_b)
-        chance_b = combos_b/(combos_c + combos_b)
-        chance_cc = chance_c*(combos_cc/(combos_cc + combos_cb))
-        chance_cb = chance_c*(combos_cb/(combos_cc + combos_cb))
-        chance_bf = chance_b*(combos_bf/(combos_bf + combos_bc + combos_bb))
-        chance_bc = chance_b*(combos_bc/(combos_bf + combos_bc + combos_bb))
-        chance_bb = chance_b*(combos_bb/(combos_bf + combos_bc + combos_bb))
-        chance_cbf = chance_cb*(combos_cbf/(combos_cbf + combos_cbc + combos_cbb))
-        chance_cbc = chance_cb*(combos_cbc/(combos_cbf + combos_cbc + combos_cbb))
-        chance_cbb = chance_cb*(combos_cbb/(combos_cbf + combos_cbc + combos_cbb))
-        chance_bbf = chance_bb*(combos_bbf/(combos_bbf + combos_bbc))
-        chance_bbc = chance_bb*(combos_bbc/(combos_bbf + combos_bbc))
-        chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
-        chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
-
-    # print("Test that all add to 1.0")
-    chance_c+chance_b, chance_cc+chance_cb+chance_bf+chance_bc+chance_bb, \
-    chance_cc+chance_cbf+chance_cbc+chance_cbb+chance_bf+chance_bc+chance_bbf+chance_bbc, \
-    chance_cc+chance_cbf+chance_cbc+chance_cbbf+chance_cbbc+chance_bf+chance_bc+chance_bbf+chance_bbc
-
-
-
-
-
-    m2 = {14: 'A', 13: 'K', 12: 'Q', 11: 'J', 10: 'T',
-          9: '9', 8: '8', 7: '7', 6: '6', 5: '5',
-          4: '4', 3: '3', 2: '2'}
-    def convert_hands_to_range(hands, flop):
-        result = []
-        for hand in hands[0]:
-            rank = hand[0][0]
-            if hand[1] != 6 and rank not in flop:
-                result.append(m2[rank] + "s" + m2[rank] + "h")
-                result.append(m2[rank] + "s" + m2[rank] + "c")
-                result.append(m2[rank] + "s" + m2[rank] + "d")
-            else:
-                result.append(m2[rank]*2)
-        for hand in hands[1]:
-            rank1 = hand[0][0]
-            rank2 = hand[0][1]
-            if hand[1] == 4:
-                result.append(m2[rank1] + m2[rank2])
-            elif hand[1] == 3 and (rank1 in flop or rank2 in flop):
-                result.append(m2[rank1] + m2[rank2])
-            elif hand[1] == 3:
-                result.append(m2[rank1] + "s" + m2[rank2] + "s")
-                result.append(m2[rank1] + "h" + m2[rank2] + "h")
-                result.append(m2[rank1] + "c" + m2[rank2] + "c")
-            elif hand[1] == 2 and ((rank1 in flop and rank2 in flop) or (rank1 == paired_value or rank2 == paired_value)):
-                result.append(m2[rank1] + m2[rank2])
-            elif hand[1] == 2:
-                result.append(m2[rank1] + "s" + m2[rank2] + "s")
-                result.append(m2[rank1] + "h" + m2[rank2] + "h")
-            elif hand[1] == 1:
-                result.append(m2[rank1] + "s" + m2[rank2] + "s")
-        for hand in hands[2]:
-            rank1 = hand[0][0]
-            rank2 = hand[0][1]
-            if hand[1] == 12:
-                result.append(m2[rank1] + m2[rank2])
-            elif rank1 in flop or rank2 in flop:
-                result.append(m2[rank1] + m2[rank2])
-            elif hand[1] == 6:
-                # one spade
-                result.append(m2[rank1] + "s" + m2[rank2] + "h")
-                result.append(m2[rank1] + "s" + m2[rank2] + "c")
-                result.append(m2[rank1] + "s" + m2[rank2] + "d")
-                result.append(m2[rank1] + "h" + m2[rank2] + "s")
-                result.append(m2[rank1] + "c" + m2[rank2] + "s")
-                result.append(m2[rank1] + "d" + m2[rank2] + "s")
-            else:
-                raise Exception # Should never occur, investigate if this occurs
-        return ",".join(result)
-
-
-
-    #### 2) the ranges that go against each other (or who won pot)
-    if my_position_ip:
-        pass
-    else:
-        # Hands version
-        final_my_hands_cc = my_hands_c
-        final_opponents_hands_cc = opponents_hands_cc
-        final_my_hands_cbc = my_hands_cbc
-        final_opponents_hands_cbc = opponents_hands_cb
-        final_my_hands_cbbc = my_hands_cbb
-        final_opponents_hands_cbbc = opponents_hands_cbbc
-        final_my_hands_bc = my_hands_b
-        final_opponents_hands_bc = opponents_hands_bc
-        final_my_hands_bbc = my_hands_bbc
-        final_opponents_hands_bbc = opponents_hands_bb
-
-        # String version for Equilab
-        final_my_hands_cc_string = convert_hands_to_range(my_hands_c, flop)
-        final_opponents_hands_cc_string = convert_hands_to_range(opponents_hands_cc, flop)
-        final_my_hands_cbc_string = convert_hands_to_range(my_hands_cbc, flop)
-        final_opponents_hands_cbc_string = convert_hands_to_range(opponents_hands_cb, flop)
-        final_my_hands_cbbc_string = convert_hands_to_range(my_hands_cbb, flop)
-        final_opponents_hands_cbbc_string = convert_hands_to_range(opponents_hands_cbbc, flop)
-        final_my_hands_bc_string = convert_hands_to_range(my_hands_b, flop)
-        final_opponents_hands_bc_string = convert_hands_to_range(opponents_hands_bc, flop)
-        final_my_hands_bbc_string = convert_hands_to_range(my_hands_bbc, flop)
-        final_opponents_hands_bbc_string = convert_hands_to_range(opponents_hands_bb, flop)
-
-        # Flop as string (won't get a card twice due to exceptions thrown far above)
-        if board_type == "rainbow":
-            final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "c"
-        elif board_type == "two-tone":
-            final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "s"
-        elif board_type == "monotone":
-            final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "s" + m2[flop[2]] + "s"
-
-
-
-
-      # #### 3) Equilab control mouse and save equity
-    import pyautogui as g
-    from time import sleep
-    import pyperclip as clip
-    g.FAILSAFE = True
-    # g.position()
-
-    def c():
-        g.click(button='left')
-
-    def c2():
-        g.click(clicks=2)
-
-    def rc():
-        g.click(button='right')
-
-    def paste():
-        g.keyDown('ctrl')
-        g.keyDown('v')
-        g.keyUp('v')
-        g.keyUp('ctrl')
-
-    def copy_text():
-        g.keyDown('ctrl')
-        g.keyDown('c')
-        g.keyUp('c')
-        g.keyUp('ctrl')
-
-
-    # Click on screen
-    g.moveTo(791, 398)
-    c()
-
-
-
-
-    equity_cc = 0.50
-    equity_cbc = 0.50
-    equity_cbbc = 0.50
-    equity_bc = 0.50
-    equity_bbc = 0.50
-    if my_position_ip:
-        pass
-    else:
-        actions = ["cc", "cbc", "cbbc", "bc", "bbc"]
-        mine_temp = [final_my_hands_cc_string, final_my_hands_cbc_string, final_my_hands_cbbc_string, final_my_hands_bc_string, final_my_hands_bbc_string]
-        opponents_temp = [final_opponents_hands_cc_string, final_opponents_hands_cbc_string, final_opponents_hands_cbbc_string, final_opponents_hands_bc_string, final_opponents_hands_bbc_string]
-        for action, my_hands_string, opponents_hands_string in zip(actions, mine_temp, opponents_temp):
-            # If empty range, continue
-            if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
-                continue
-
-            # Clear all
-            g.moveTo(959, 396)
-            c()
-
-            # Flop
-            clip.copy(final_flop_string)
-            g.moveTo(784, 320)
-            c()
-            paste()
-
-            # Hand range 1
-            clip.copy(my_hands_string)
-            g.moveTo(972, 156)
-            c()
-            paste()
-
-            # Hand range 2
-            clip.copy(opponents_hands_string)
-            g.moveTo(999, 179)
-            c()
-            paste()
-
-            # Evaluate button
-            g.moveTo(1377, 394)
-            c()
-
-            # Sleep
-            sleep(1)
-
-            # Copy equity
-            g.moveTo(1396, 158)
-            c2()
-            copy_text()
-
-            # Save raw equity
-            raw_equity_string = clip.paste()
-            raw_equity = float(raw_equity_string.replace("%",""))/100
-
-            # Adjust for position and implied odds
-            # (assuming cat3 is only one with implied odds; not entirely true but fine)
-            # 3 represents +/- 3%, 0.5 represents maximum difference expected
-            # - 0.03 represents unrealized equity from being out of position
-            if action == "cc":
-                implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100
-                equity_cc = raw_equity - 0.03 + implied_odds_adjustment
-            elif action == "cbc":
-                implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100
-                equity_cbc = raw_equity - 0.03 + implied_odds_adjustment
-            elif action == "cbbc":
-                implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100
-                equity_cbbc = raw_equity - 0.03 + implied_odds_adjustment
-            elif action == "bc":
-                implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100
-                equity_bc = raw_equity - 0.03 + implied_odds_adjustment
-            else:
-                implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100
-                equity_bbc = raw_equity - 0.03 + implied_odds_adjustment
-
-
-
-
-
-
-
-    #### 4) The pot size in each situation including fold situations
-    if my_position_ip:
-        pass
-    else:
-        winnings_cc = pot_size*equity_cc
-        winnings_cbf = 0
-        cbc_pot_size = (pot_size + (pot_size*opponents_bet_size)*2)
-        winnings_cbc = cbc_pot_size*equity_cbc
-        winnings_cbbf = (cbc_pot_size + (cbc_pot_size*my_bet_size))
-        winnings_cbbc = (cbc_pot_size + (cbc_pot_size*my_bet_size)*2)*equity_cbbc
-        winnings_bf = pot_size + (pot_size*my_bet_size)
-        bc_pot_size = (pot_size + (pot_size*my_bet_size)*2)
-        winnings_bc = bc_pot_size*equity_bc
-        winnings_bbf = 0
-        winnings_bbc = (bc_pot_size + (bc_pot_size*opponents_bet_size)*2)*equity_bbc
-
-        my_investment_cc = my_investment
-        my_investment_cbf = my_investment
-        my_investment_cbc = my_investment + (opponents_bet_size*pot_size)
-        my_investment_cbbf = my_investment + (opponents_bet_size*pot_size) + (cbc_pot_size*my_bet_size)
-        my_investment_cbbc = my_investment + (opponents_bet_size*pot_size) + (cbc_pot_size*my_bet_size)
-        my_investment_bf = my_investment + (pot_size*my_bet_size)
-        my_investment_bc = my_investment + (pot_size*my_bet_size)
-        my_investment_bbf = my_investment + (pot_size*my_bet_size)
-        my_investment_bbc = my_investment + (pot_size*my_bet_size) + (bc_pot_size*opponents_bet_size)
-
-        # Final profit amount
-        profit = (winnings_cc-my_investment_cc)*chance_cc + \
-                 (winnings_cbf-my_investment_cbf)*chance_cbf + \
-                 (winnings_cbc-my_investment_cbc)*chance_cbc + \
-                 (winnings_cbbf-my_investment_cbbf)*chance_cbbf + \
-                 (winnings_cbbc-my_investment_cbbc)*chance_cbbc + \
-                 (winnings_bf-my_investment_bf)*chance_bf + \
-                 (winnings_bc-my_investment_bc)*chance_bc + \
-                 (winnings_bbf-my_investment_bbf)*chance_bbf + \
-                 (winnings_bbc-my_investment_bbc)*chance_bbc
-
-    print("Profit: %.3f" % (profit))
-
-
-    if profit > max_profit:
-        max_profit = profit
-        profits['0b'].append(cat3_level_0b)
-        profits['1b'].append(cat3_level_1b)
-        profits['2b'].append(cat3_level_2b)
-        profits['profit'].append(profit)
-
-    if profit < last_profit and profit_became_worse:
-        profit_became_worse_twice = True
-        last_profit = profit
-    elif profit < last_profit:
-        profit_became_worse = True
-
-    return profit_became_worse_twice, profit_became_worse, profits, max_profit
-
-    # pot_size = 6.5
-    # my_investment = 2.5
-    # opponents_bet_size = 0.60
-    # my_bet_size
-
-
-
-
-
-
-# Initialize loop variables (outside a flop changing loop for now, but can add that later) *******
 max_profit = -100
 last_profit = -100
-profits = {'0b': [], '1b': [], '2b': [], 'profit': []}
+profits = {'flop': [], 'board_type': [], '0b': [], '1b': [], '2b': [], 'profit': []}
+i = 0
+for flop in flops:
 
-# Initialize loop
-profit_became_worse = False
-profit_became_worse_twice = False
-for cat3_level_0b in range(0, 20):
-    cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
-    cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+    # ***
+    # Focus on one flop for now, later iterate through all of them
+    # flop = [11,6,3]
+    board_type = "two-tone" # two-tone (65%), rainbow (30%), monotone (5%)
 
-    # Run main
-    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
-
-    if profit_became_worse_twice:
-        break
-
-# Set best 0b
-max_profit_index = np.argmax(profits['profit'])
-cat3_level_0b = profits['0b'][max_profit_index]
-cat3_level_1b = profits['1b'][max_profit_index]
-cat3_level_2b = profits['2b'][max_profit_index]
-
-
-profit_became_worse = False
-profit_became_worse_twice = False
-for new_cat3_level_1b in range(cat3_level_1b-1, 20):
-    cat3_level_1b = new_cat3_level_1b
-    cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
-
-    # Run main
-    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
-
-    if profit_became_worse_twice:
-        break
-
-# Set best 1b
-max_profit_index = np.argmax(profits['profit'])
-cat3_level_0b = profits['0b'][max_profit_index]
-cat3_level_1b = profits['1b'][max_profit_index]
-cat3_level_2b = profits['2b'][max_profit_index]
+    # Focus on one range for now, later iterate through all of them
+    range_name = "CO_RFI_vs_BN_call"
+    my_range = co_rfi
+    opponents_range = vsRFI_bn_vs_co__call
+    my_position_ip = False
+    opponent_pfr = False
+    pot_size = 6.5
+    my_investment = 2.5
 
 
 
-profit_became_worse = False
-profit_became_worse_twice = False
-for new_cat3_level_2b in range(cat3_level_2b-1, 20):
-    cat3_level_2b = new_cat3_level_2b
 
-    # Run main
-    profit_became_worse_twice, profit_became_worse, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
 
-    if profit_became_worse_twice:
-        break
 
-print(profits)
-df = pd.DataFrame(profits)
-df['rank1'] = flop[0]
-df['rank2'] = flop[1]
-df['rank3'] = flop[2]
-print(df)
-df.to_csv("results.csv")
+    # Interim variables
+    my_hands = range_to_hands(my_range)
+    opponents_hands = range_to_hands(opponents_range)
+    is_paired = 1 if flop[0] == flop[1] or flop[1] == flop[2] else 0
+    paired_value = 0 if not is_paired else flop[0] if flop[0] == flop[1] else flop[1]
+
+    # Check for invalid flop + board type
+    if board_type == "monotone" and is_paired:
+        raise Exception
+    if board_type == "two-tone" and flop[0] == flop[2]:
+        raise Exception
+
+    opponent_unraised_strategy = {
+        'cat1': {1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9},
+        'cat2': {1: 2, 2: 5, 3: 6, 4: 6, 5: 7, 6: 7, 7: 7},
+        'cat3': {1: 16 if opponent_pfr else 3,
+                 2: 16 if opponent_pfr else 3,
+                 3: 16 if opponent_pfr else 3,
+                 4: 16 if opponent_pfr else 3,
+                 5: 16 if opponent_pfr else 3,
+                 6: 16 if opponent_pfr else 3,  # Opponent is way more bluff-heavy when the pfr; semi-good for them.
+                 7: 16 if opponent_pfr else 3}, # skipping 4-10 for opponent's strategy (default in their strat)
+    }
+    opponent_strategy = {
+        "oop_open": opponent_unraised_strategy,
+        "oop_vs_cb": opponent_raised_strategy,
+        "oop_vs_br": opponent_reraised_strategy,
+        "ip_vs_c": opponent_unraised_strategy,
+        "ip_vs_b": opponent_raised_strategy,
+        "ip_vs_cbr": opponent_reraised_strategy,
+    }
+
+
+
+
+
+    # Important note: lower ranked rules may include higher ranked hands
+        # Also tp_j_kicker includes trips because it's okay that it does because of the theory:
+        # actions taken by one hand are taken by all better hands within the cat
+        # ! Just be careful that you remove cat1 hands from final cat2, same with cat3 with both cat1 & 2
+        # Might want to QA with a hand matrix coloring compare with the existing matrix based on default rules
+
+    # Cat1
+    #### Assuming no flushes (monotone boards) for simplicity
+    my_hands_s_straight = [] if is_paired else [(x, 4) for x in my_hands[1] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
+    my_hands_o_straight = [] if is_paired else [(x, 12) for x in my_hands[2] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
+    my_hands_pp_sets = [(x, 3) for x in my_hands[0] if x[0] in flop]
+    my_hands_s_trips = [] if not is_paired else [(x, 2) for x in my_hands[1] if x[0] == paired_value or x[1] == paired_value]
+    my_hands_o_trips = [] if not is_paired else [(x, 6) for x in my_hands[2] if x[0] == paired_value or x[1] == paired_value]
+    # 2 combos most times, not 3; 7 more often than 6
+    my_hands_s_two_pair = [] if is_paired else [(x, 2) for x in my_hands[1] if x[0] in flop and x[1] in flop]
+    my_hands_o_two_pair = [] if is_paired else [(x, 7) for x in my_hands[2] if x[0] in flop and x[1] in flop]
+    my_hands_pp_overpair_9plus = [(x, 6) for x in my_hands[0] if x[0] > flop[0] and x[0] >= 9]
+    my_hands_pp_any_overpair = [(x, 6) for x in my_hands[0] if x[0] > flop[0]]
+    my_hands_s_tp_k_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
+    my_hands_o_tp_k_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
+    my_hands_s_tp_j_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
+    my_hands_o_tp_j_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
+    my_hands_s_tp_any_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    my_hands_o_tp_any_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+
+    # Cat2 (flushdraws with high card hand might actually be part of cat3, but saying the combos are part of cat2)
+    my_hands_s_tp_bad_kicker = [(x, 3) for x in my_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    my_hands_o_tp_bad_kicker = [(x, 9) for x in my_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    my_hands_s_middle_pair = [(x, 3) for x in my_hands[1] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
+    my_hands_o_middle_pair = [(x, 9) for x in my_hands[2] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
+    my_hands_s_bottom_pair = [(x, 3) for x in my_hands[1] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
+    my_hands_o_bottom_pair = [(x, 9) for x in my_hands[2] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
+    my_hands_pp_below_top_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[0] and x[0] > flop[1]]
+    my_hands_s_aj_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
+    my_hands_o_aj_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
+    my_hands_pp_below_middle_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[1] and x[0] > flop[2]]
+    my_hands_s_kq_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
+    my_hands_o_kq_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
+    my_hands_pp_below_bottom_pair = [(x, 6) for x in my_hands[0] if x[0] < flop[2]]
+    my_hands_s_kj_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
+    my_hands_o_kj_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
+    my_hands_s_k8_high = [(x, 4) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
+    my_hands_o_k8_high = [(x, 12) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
+
+    # Cat3 paired
+    #### bdfd/fd/no_fd combos should not be counted twice; combine them smartly and carefully.
+    #### Assuming no suited flushdraw possible with pair on two-tone for simplicity
+    #### Might say a straight is a gutshot but that is fine because future logic
+    ## Include the combos for that hand
+    if board_type == "two-tone":
+        my_hands_pp_fd = []
+        my_hands_s_fd = [(x, 1) for x in my_hands[1] if x[0] not in flop and x[1] not in flop]
+        my_hands_o_fd = []
+    elif board_type == "rainbow":
+        my_hands_pp_fd = []
+        my_hands_s_fd = []
+        my_hands_o_fd = []
+    else:
+        my_hands_pp_fd = [(x, 3) for x in my_hands[0] if x[0] not in flop]
+        my_hands_s_fd = []
+        # If paired then ignore the flushdraw (anyway, just monotone; just makes things simpler)
+        my_hands_o_fd = [(x, 6) for x in my_hands[2] if x[0] not in flop and x[1] not in flop]
+    #### Also added double gutshots.  Doing a bit of overcounting for oesd+pair, which is fine for estimation (should be 9).
+    my_hands_pp_oesd = [(x, 6) for x in my_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    my_hands_s_oesd = [(x, 4) for x in my_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    my_hands_o_oesd = [(x, 12) for x in my_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    my_hands_pp_gutshot = [(x, 6) for x in my_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    my_hands_s_gutshot = [(x, 4) for x in my_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    my_hands_o_gutshot = [(x, 12) for x in my_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    #### Additional rule: 3 to a straight requires two cards from your hand not just one (that's how I want it to be)
+    my_hands_s_3_to_straight_not_all_from_low_end = [(x, 4) for x in my_hands[1] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
+    my_hands_o_3_to_straight_not_all_from_low_end = [(x, 12) for x in my_hands[2] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
+    if board_type == "two-tone":
+        my_hands_s_3_to_straight_low_end_bdfd = [(x, 1) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        my_hands_o_3_to_straight_low_end_bdfd = [(x, 6) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    elif board_type == "rainbow":
+        my_hands_s_3_to_straight_low_end_bdfd = [(x, 3) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        my_hands_o_3_to_straight_low_end_bdfd = []
+    else:
+        my_hands_s_3_to_straight_low_end_bdfd = []
+        my_hands_o_3_to_straight_low_end_bdfd = []
+    if board_type == "two-tone":
+        my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    elif board_type == "rainbow":
+        my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    else:
+        my_hands_s_3_to_straight_low_end = [(x, 4) for x in my_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        my_hands_o_3_to_straight_low_end = [(x, 12) for x in my_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    if board_type == "two-tone":
+        my_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+        my_hands_o_5_unique_cards_within_7_values_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+    elif board_type == "rainbow":
+        my_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+        my_hands_o_5_unique_cards_within_7_values_bdfd = []
+    else:
+        my_hands_s_5_unique_cards_within_7_values_bdfd = []
+        my_hands_o_5_unique_cards_within_7_values_bdfd = []
+    if board_type == "two-tone":
+        my_hands_pp_q_minus_bdfd = [(x, 3) for x in my_hands[0] if (x[0] not in flop) and x[0] <= 12]
+        my_hands_s_q_minus_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+        my_hands_o_q_minus_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+    elif board_type == "rainbow":
+        my_hands_pp_q_minus_bdfd = []
+        my_hands_s_q_minus_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+        my_hands_o_q_minus_bdfd = []
+    else:
+        my_hands_pp_q_minus_bdfd = []
+        my_hands_s_q_minus_bdfd = []
+        my_hands_o_q_minus_bdfd = []
+    #### 3 cards within 4 values with two overcards
+    my_hands_s_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 4) for x in my_hands[1] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
+    my_hands_o_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 12) for x in my_hands[2] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
+    if board_type == "two-tone":
+        my_hands_pp_a_minus_bdfd = [(x, 3) for x in my_hands[0] if (x[0] not in flop) and x[0] > 12 and x[0] <= 14]
+        my_hands_s_a_minus_bdfd = [(x, 1) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+        my_hands_o_a_minus_bdfd = [(x, 6) for x in my_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+    elif board_type == "rainbow":
+        my_hands_pp_a_minus_bdfd = []
+        my_hands_s_a_minus_bdfd = [(x, 3) for x in my_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+        my_hands_o_a_minus_bdfd = []
+    else:
+        my_hands_pp_a_minus_bdfd = []
+        my_hands_s_a_minus_bdfd = []
+        my_hands_o_a_minus_bdfd = []
+
+
+
+
+    # Important note: lower ranked rules may include higher ranked hands
+        # Also tp_j_kicker includes trips because it's okay that it does because of the theory:
+        # actions taken by one hand are taken by all better hands within the cat
+        # ! Just be careful that you remove cat1 hands from final cat2, same with cat3 with both cat1 & 2
+        # Might want to QA with a hand matrix coloring compare with the existing matrix based on default rules
+
+    # Cat1
+    #### Assuming no flushes (monotone boards) for simplicity
+    opponents_hands_s_straight = [] if is_paired else [(x, 4) for x in opponents_hands[1] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
+    opponents_hands_o_straight = [] if is_paired else [(x, 12) for x in opponents_hands[2] if max(x + flop) - min(x + flop) == 4 or max([1 if y == 14 else y for y in (x + flop)]) - min([1 if y == 14 else y for y in (x + flop)]) == 4]
+    opponents_hands_pp_sets = [(x, 3) for x in opponents_hands[0] if x[0] in flop]
+    opponents_hands_s_trips = [] if not is_paired else [(x, 2) for x in opponents_hands[1] if x[0] == paired_value or x[1] == paired_value]
+    opponents_hands_o_trips = [] if not is_paired else [(x, 6) for x in opponents_hands[2] if x[0] == paired_value or x[1] == paired_value]
+    # 2 combos most times, not 3; 7 more often than 6
+    opponents_hands_s_two_pair = [] if is_paired else [(x, 2) for x in opponents_hands[1] if x[0] in flop and x[1] in flop]
+    opponents_hands_o_two_pair = [] if is_paired else [(x, 7) for x in opponents_hands[2] if x[0] in flop and x[1] in flop]
+    opponents_hands_pp_overpair_9plus = [(x, 6) for x in opponents_hands[0] if x[0] > flop[0] and x[0] >= 9]
+    opponents_hands_pp_any_overpair = [(x, 6) for x in opponents_hands[0] if x[0] > flop[0]]
+    opponents_hands_s_tp_k_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
+    opponents_hands_o_tp_k_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] >= 13) or (x[1] == flop[0] and x[0] >= 13)]
+    opponents_hands_s_tp_j_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
+    opponents_hands_o_tp_j_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] >= 11 and x[1] <= 12 and x[1] not in flop) or (x[1] == flop[0] and x[0] >= 11 and x[0] <= 12 and x[0] not in flop)]
+    opponents_hands_s_tp_any_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    opponents_hands_o_tp_any_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+
+    # Cat2 (flushdraws with high card hand might actually be part of cat3, but saying the combos are part of cat2)
+    opponents_hands_s_tp_bad_kicker = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    opponents_hands_o_tp_bad_kicker = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[0] and x[1] <= 10 and x[1] not in flop) or (x[1] == flop[0] and x[0] <= 10 and x[0] not in flop)]
+    opponents_hands_s_middle_pair = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
+    opponents_hands_o_middle_pair = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[1] and x[1] not in flop) or (x[1] == flop[1] and x[0] not in flop)]
+    opponents_hands_s_bottom_pair = [(x, 3) for x in opponents_hands[1] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
+    opponents_hands_o_bottom_pair = [(x, 9) for x in opponents_hands[2] if (x[0] == flop[2] and x[1] not in flop) or (x[1] == flop[2] and x[0] not in flop)]
+    opponents_hands_pp_below_top_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[0] and x[0] > flop[1]]
+    opponents_hands_s_aj_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
+    opponents_hands_o_aj_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 14) and (x[1] > 10)]
+    opponents_hands_pp_below_middle_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[1] and x[0] > flop[2]]
+    opponents_hands_s_kq_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
+    opponents_hands_o_kq_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and ((x[0] == 13 and x[1] > 11) or (x[0] == 14))]
+    opponents_hands_pp_below_bottom_pair = [(x, 6) for x in opponents_hands[0] if x[0] < flop[2]]
+    opponents_hands_s_kj_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
+    opponents_hands_o_kj_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] == 11)]
+    opponents_hands_s_k8_high = [(x, 4) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
+    opponents_hands_o_k8_high = [(x, 12) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and (x[0] == 13) and (x[1] < 11 and x[1] >= 8)]
+
+    # Cat3 paired
+    #### bdfd/fd/no_fd combos should not be counted twice; combine them smartly and carefully.
+    #### Assuming no suited flushdraw possible with pair on two-tone for simplicity
+    #### Might say a straight is a gutshot but that is fine because future logic
+    ## Include the combos for that hand
+    if board_type == "two-tone":
+        opponents_hands_pp_fd = []
+        opponents_hands_s_fd = [(x, 1) for x in opponents_hands[1] if x[0] not in flop and x[1] not in flop]
+        opponents_hands_o_fd = []
+    elif board_type == "rainbow":
+        opponents_hands_pp_fd = []
+        opponents_hands_s_fd = []
+        opponents_hands_o_fd = []
+    else:
+        opponents_hands_pp_fd = [(x, 3) for x in opponents_hands[0] if x[0] not in flop]
+        opponents_hands_s_fd = []
+        # If paired then ignore the flushdraw (anyway, just monotone; just makes things simpler)
+        opponents_hands_o_fd = [(x, 6) for x in opponents_hands[2] if x[0] not in flop and x[1] not in flop]
+    #### Also added double gutshots.  Doing a bit of overcounting for oesd+pair, which is fine for estimation (should be 9).
+    opponents_hands_pp_oesd = [(x, 6) for x in opponents_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    opponents_hands_s_oesd = [(x, 4) for x in opponents_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    opponents_hands_o_oesd = [(x, 12) for x in opponents_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 3) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 3) or (sorted(x+flop) == [3,4,5,7,14]) or (max(x+flop) - min(x+flop) == 6 and min(x+flop)+2 == sorted(x+flop)[1] and max(x+flop)-2 == sorted(x+flop)[-2])]
+    opponents_hands_pp_gutshot = [(x, 6) for x in opponents_hands[0] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    opponents_hands_s_gutshot = [(x, 4) for x in opponents_hands[1] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    opponents_hands_o_gutshot = [(x, 12) for x in opponents_hands[2] if (sorted(set(x + flop + [20,21,22]))[3] - min(x + flop) == 4) or (max(x + flop) - sorted(set(x + flop + [-20,-19,-18]))[-4] == 4) or (sorted(set([1 if y == 14 else y for y in (x + flop)] + [20,21,22]))[3] <= 5)]
+    #### Additional rule: 3 to a straight requires two cards from your hand not just one (that's how I want it to be)
+    opponents_hands_s_3_to_straight_not_all_from_low_end = [(x, 4) for x in opponents_hands[1] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
+    opponents_hands_o_3_to_straight_not_all_from_low_end = [(x, 12) for x in opponents_hands[2] if (x[0] != 14) and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]+1 and x[1] == flop[0]-1) or (x[0] == flop[0]+2 and x[1] == flop[0]+1) or (x[0] == flop[1]+1 and x[1] == flop[1]-1) or (x[0] == flop[1]+2 and x[1] == flop[1]+1) or (x[0] == flop[2]+1 and x[1] == flop[2]-1) or (x[0] == flop[2]+2 and x[1] == flop[2]+1))]
+    if board_type == "two-tone":
+        opponents_hands_s_3_to_straight_low_end_bdfd = [(x, 1) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        opponents_hands_o_3_to_straight_low_end_bdfd = [(x, 6) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    elif board_type == "rainbow":
+        opponents_hands_s_3_to_straight_low_end_bdfd = [(x, 3) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        opponents_hands_o_3_to_straight_low_end_bdfd = []
+    else:
+        opponents_hands_s_3_to_straight_low_end_bdfd = []
+        opponents_hands_o_3_to_straight_low_end_bdfd = []
+    if board_type == "two-tone":
+        opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    elif board_type == "rainbow":
+        opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    else:
+        opponents_hands_s_3_to_straight_low_end = [(x, 4) for x in opponents_hands[1] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+        opponents_hands_o_3_to_straight_low_end = [(x, 12) for x in opponents_hands[2] if x[0] != 13 and (x[0] not in flop and x[1] not in flop) and ((x[0] == flop[0]-1 and x[1] == flop[0]-2) or (x[0] == flop[1]-1 and x[1] == flop[1]-2) or (x[0] == flop[2]-1 and x[1] == flop[2]-2))]
+    if board_type == "two-tone":
+        opponents_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+        opponents_hands_o_5_unique_cards_within_7_values_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+    elif board_type == "rainbow":
+        opponents_hands_s_5_unique_cards_within_7_values_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and max(flop+x) - min(flop+x) <= 7]
+        opponents_hands_o_5_unique_cards_within_7_values_bdfd = []
+    else:
+        opponents_hands_s_5_unique_cards_within_7_values_bdfd = []
+        opponents_hands_o_5_unique_cards_within_7_values_bdfd = []
+    if board_type == "two-tone":
+        opponents_hands_pp_q_minus_bdfd = [(x, 3) for x in opponents_hands[0] if (x[0] not in flop) and x[0] <= 12]
+        opponents_hands_s_q_minus_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+        opponents_hands_o_q_minus_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+    elif board_type == "rainbow":
+        opponents_hands_pp_q_minus_bdfd = []
+        opponents_hands_s_q_minus_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] <= 12]
+        opponents_hands_o_q_minus_bdfd = []
+    else:
+        opponents_hands_pp_q_minus_bdfd = []
+        opponents_hands_s_q_minus_bdfd = []
+        opponents_hands_o_q_minus_bdfd = []
+    #### 3 cards within 4 values with two overcards
+    opponents_hands_s_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 4) for x in opponents_hands[1] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
+    opponents_hands_o_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards = [(x, 12) for x in opponents_hands[2] if x[1] > flop[0] and ((max(flop + [x[1]]) - sorted(set(flop + [x[1]] + [-20,-19,-18]))[-3] <= 3) or (max(flop + x) - sorted(set(flop + x + [-20,-19,-18]))[-3] <= 3))]
+    if board_type == "two-tone":
+        opponents_hands_pp_a_minus_bdfd = [(x, 3) for x in opponents_hands[0] if (x[0] not in flop) and x[0] > 12 and x[0] <= 14]
+        opponents_hands_s_a_minus_bdfd = [(x, 1) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+        opponents_hands_o_a_minus_bdfd = [(x, 6) for x in opponents_hands[2] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+    elif board_type == "rainbow":
+        opponents_hands_pp_a_minus_bdfd = []
+        opponents_hands_s_a_minus_bdfd = [(x, 3) for x in opponents_hands[1] if (x[0] not in flop and x[1] not in flop) and x[0] > 12 and x[0] <= 14]
+        opponents_hands_o_a_minus_bdfd = []
+    else:
+        opponents_hands_pp_a_minus_bdfd = []
+        opponents_hands_s_a_minus_bdfd = []
+        opponents_hands_o_a_minus_bdfd = []
+
+
+
+    def main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice):
+
+        # Determine my strategy this hand
+        my_hands_cat1_0b = my_hands_cat1_level_x_and_above(8)  # Always 8
+
+        # If IP + (flop type 6 or 7 or PFR)
+        if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
+            my_hands_cat2_0b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_0b)
+        else:
+            my_hands_cat2_0b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_0b)
+        my_hands_cat3_0b = None
+
+
+        # # Removed because these constraints are unprofitable as of now
+        # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
+        # cat3_combos_0b_lb = sum([y for (x,y) in my_hands_cat1_0b[0]])+sum([y for (x,y) in my_hands_cat1_0b[1]])+sum([y for (x,y) in my_hands_cat1_0b[2]])
+        # cat3_combos_0b_ub = cat3_combos_0b_lb * 2.3
+        #
+        # # Initialize
+        # my_cat3_level_lb = 1
+        # my_cat3_level_ub = 21
+        #
+        # # Find bounds
+        # cat3_combos = 0
+        # for i in range(20):
+        #     if cat3_combos >= cat3_combos_0b_lb:
+        #         break
+        #     else:
+        #         my_cat3_level_lb += 1
+        #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_0b, my_hands_cat2_0b)
+        #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
+        #
+        # cat3_combos = 400
+        # for i in range(20):
+        #     if cat3_combos <= cat3_combos_0b_ub:
+        #         break
+        #     else:
+        #         my_cat3_level_ub -= 1
+        #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_0b, my_hands_cat2_0b)
+        #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
+
+        # Print bounds
+        # print("0b: my_cat3_level_lb", my_cat3_level_lb)
+        # print("0b: my_cat3_level_ub", my_cat3_level_ub)
+
+        my_hands_cat3_0b = my_hands_cat3_level_x_and_above(cat3_level_0b, my_hands_cat1_0b, my_hands_cat2_0b)
+
+
+
+
+
+        # Determine my strategy this hand
+        my_hands_cat1_1b = my_hands_cat1_level_x_and_above(6)
+        if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
+            my_hands_cat2_1b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_1b)
+        else:
+            my_hands_cat2_1b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_1b)
+        my_hands_cat3_1b = None
+
+        # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
+        # cat3_combos_1b_lb = sum([y for (x,y) in my_hands_cat1_1b[0]])+sum([y for (x,y) in my_hands_cat1_1b[1]])+sum([y for (x,y) in my_hands_cat1_1b[2]])
+        # cat3_combos_1b_ub = cat3_combos_1b_lb * 2.3
+        #
+        # # Initialize
+        # my_cat3_level_lb = 1
+        # my_cat3_level_ub = 21
+        #
+        # # Find bounds
+        # cat3_combos = 0
+        # for i in range(20):
+        #     if cat3_combos >= cat3_combos_1b_lb:
+        #         break
+        #     else:
+        #         my_cat3_level_lb += 1
+        #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_1b, my_hands_cat2_1b)
+        #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
+        #
+        # cat3_combos = 400
+        # for i in range(20):
+        #     if cat3_combos <= cat3_combos_1b_ub:
+        #         break
+        #     else:
+        #         my_cat3_level_ub -= 1
+        #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_1b, my_hands_cat2_1b)
+        #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
+
+        # Print bounds
+        # print("1b: my_cat3_level_lb", my_cat3_level_lb)
+        # print("1b: my_cat3_level_ub", my_cat3_level_ub)
+
+        my_hands_cat3_1b = my_hands_cat3_level_x_and_above(cat3_level_1b, my_hands_cat1_1b, my_hands_cat2_1b)
+
+
+
+
+
+
+        # Determine my strategy this hand
+        my_hands_cat1_2b = my_hands_cat1_level_x_and_above(0)
+        my_hands_cat2_2b = my_hands_cat2_level_x_and_above(3, my_hands_cat1_2b)
+        my_hands_cat3_2b = None
+
+        # Interim step (50:50 to 30:70 ratio cat1 to cat3)
+        # cat3_combos_2b_lb = sum([y for (x,y) in my_hands_cat1_2b[0]])+sum([y for (x,y) in my_hands_cat1_2b[1]])+sum([y for (x,y) in my_hands_cat1_2b[2]])
+        # cat3_combos_2b_ub = cat3_combos_2b_lb * 2.3
+        #
+        # # Initialize
+        # my_cat3_level_lb = 1
+        # my_cat3_level_ub = 21  # Can lower this to something like 10 or lower once experimenting on a few hands
+        # # We are just calling with our cat3 hands
+
+        # Print bounds
+        # print("2b: my_cat3_level_lb", my_cat3_level_lb)
+        # print("2b: my_cat3_level_ub", my_cat3_level_ub)
+
+
+
+
+
+        my_hands_cat3_2b = my_hands_cat3_level_x_and_above(cat3_level_2b, my_hands_cat1_2b, my_hands_cat2_2b)
+
+
+
+
+
+
+        # Changing variable
+        bets_so_far = 0 # might delete this variable
+
+        # Determine my bet size
+        my_bet_size = \
+            0.4 if is_paired else \
+            0.6 if board_type == "rainbow" and flop[0] - flop[1] >= 5 else \
+            0.8 if board_type != "rainbow" and flop[0] - flop[1] <= 4 else \
+            0.7
+
+        # Determine my opponent's strategy this hand
+        #### Identify which of the 8 flops this is to decide the opponent's strategy they will use
+        flop_type_number = get_flop_type_number()
+        opponents_hands_cat1_0b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(0)]["cat1"][flop_type_number])
+        opponents_hands_cat2_0b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(0)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_0b) # they are wider IP, but not wider than 7
+        opponents_hands_cat3_0b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(0)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_0b, opponents_hands_cat2_0b) # they are wider IP
+        opponents_hands_cat1_1b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(1)]["cat1"][flop_type_number])
+        opponents_hands_cat2_1b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(1)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_1b) # they are wider IP, but not wider than 7
+        opponents_hands_cat3_1b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(1)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_1b, opponents_hands_cat2_1b) # they are wider IP
+        opponents_hands_cat1_2b = opponents_hands_cat1_level_x_and_above(opponent_strategy[get_opponent_situation(2)]["cat1"][flop_type_number])
+        opponents_hands_cat2_2b = opponents_hands_cat2_level_x_and_above(min(7, opponent_strategy[get_opponent_situation(2)]["cat2"][flop_type_number] + 1 if not my_position_ip else 0), opponents_hands_cat1_2b) # they are wider IP, but not wider than 7
+        opponents_hands_cat3_2b = opponents_hands_cat3_level_x_and_above(opponent_strategy[get_opponent_situation(2)]["cat3"][flop_type_number] + 1 if not my_position_ip else 0, opponents_hands_cat1_2b, opponents_hands_cat2_2b) # they are wider IP
+
+        # Determine opponent's bet size:
+        opponents_bet_size = 0.60
+
+
+
+
+
+        opponents_hands_with_combos = [[], [], []]
+        opponents_hands_with_combos[0] = [(x, 6) if x[0] not in flop else (x, 3) for x in opponents_hands[0]]
+        opponents_hands_with_combos[1] = [(x, 4) if x[0] not in flop and x[1] not in flop else (x, 2) if x[0] in flop and x[1] in flop else (x,3) for x in opponents_hands[1]]
+        opponents_hands_with_combos[2] = [(x, 12) if x[0] not in flop and x[1] not in flop else (x, 7) if x[0] in flop and x[1] in flop else (x,9) for x in opponents_hands[2]]
+
+        def count_hand_combos(hands):
+            return sum([y for (x,y) in hands[0]])+sum([y for (x,y) in hands[1]])+sum([y for (x,y) in hands[2]])
+
+        def get_check_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action):
+            hands = [[], [], []]
+            temp_cat3_hands = deepcopy(cat3_hands_for_action)
+
+            # Flip sign (for subtraction)
+            for i in range(3):
+                temp_cat3_hands[i] = [(x, -1*y) for (x, y) in temp_cat3_hands[i]]
+
+            # Combine (for subtraction)
+            result = combine_hands(all_hands_before_action_w_combos, temp_cat3_hands)
+
+            # Subtraction
+            for i in range(3):
+                groupby_dict = defaultdict(int)
+                for val in result[i]:
+                    groupby_dict[tuple(val[0])] += val[1]
+                result[i] = [(sorted(list(x), reverse=True), max(0, min(y, 6 if i == 0 else 4 if i == 1 else 12))) for (x,y) in groupby_dict.items()]
+                result[i] = [(x,y) for (x,y) in result[i] if y != 0 and x not in [x for (x,y) in cat1_hands_for_action[i]]]
+            return result
+
+        def get_fold_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat2_hands_for_action, cat3_hands_for_action):
+            hands = get_check_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action)
+            for i in range(3):
+                hands[i] = [(x,y) for (x,y) in hands[i] if x not in [x for (x,y) in cat2_hands_for_action[i]]]
+            return hands
+
+        def get_call_hands(all_hands_before_action_w_combos, cat2_hands_for_action):
+            hands = deepcopy(cat2_hands_for_action)
+            for i in range(3):
+                hands[i] = [(x,y) for (x,y) in hands[i] if x in [x for (x,y) in all_hands_before_action_w_combos[i]]]
+            return hands
+
+        def get_raise_hands(all_hands_before_action_w_combos, cat1_hands_for_action, cat3_hands_for_action):
+            hands = combine_hands(cat1_hands_for_action, cat3_hands_for_action)
+            for i in range(3):
+                hands[i] = [(x,y) for (x,y) in hands[i] if x in [x for (x,y) in all_hands_before_action_w_combos[i]]]
+            return hands
+
+        def combine_hands(hands1, hands2):
+            hands = [[], [], []]
+            for i in range(3):
+                hands[i] = hands1[i] + hands2[i]
+            return hands
+
+
+
+
+        my_hands_with_combos = [[], [], []]
+        my_hands_with_combos[0] = [(x, 6) if x[0] not in flop else (x, 3) for x in my_hands[0]]
+        my_hands_with_combos[1] = [(x, 4) if x[0] not in flop and x[1] not in flop else (x, 2) if x[0] in flop and x[1] in flop else (x,3) for x in my_hands[1]]
+        my_hands_with_combos[2] = [(x, 12) if x[0] not in flop and x[1] not in flop else (x, 7) if x[0] in flop and x[1] in flop else (x,9) for x in my_hands[2]]
+
+
+
+
+
+
+
+        # Determine:
+        #### 0) Hands in each situation
+        if my_position_ip:
+            pass
+        else:
+            # Hands
+            my_hands_c = get_check_hands(my_hands_with_combos, my_hands_cat1_0b, my_hands_cat3_0b)
+            my_hands_b = combine_hands(my_hands_cat1_0b, my_hands_cat3_0b)
+            opponents_hands_cc = get_check_hands(opponents_hands_with_combos, opponents_hands_cat1_0b, opponents_hands_cat3_0b)
+            opponents_hands_cb = combine_hands(opponents_hands_cat1_0b, opponents_hands_cat3_0b)
+            opponents_hands_bf = get_fold_hands(opponents_hands_with_combos, opponents_hands_cat1_1b, opponents_hands_cat2_1b, opponents_hands_cat3_1b)
+            opponents_hands_bc = opponents_hands_cat2_1b
+            opponents_hands_bb = combine_hands(opponents_hands_cat1_1b, opponents_hands_cat3_1b)
+            my_hands_cbf = get_fold_hands(my_hands_c, my_hands_cat1_1b, my_hands_cat2_1b, my_hands_cat3_1b)
+            my_hands_cbc = get_call_hands(my_hands_c, my_hands_cat2_1b)
+            my_hands_cbb = get_raise_hands(my_hands_c, my_hands_cat1_1b, my_hands_cat3_1b)
+            my_hands_bbf = get_fold_hands(my_hands_b, my_hands_cat1_2b, my_hands_cat2_2b, my_hands_cat3_2b)
+            my_hands_bbc = get_call_hands(my_hands_b, combine_hands(my_hands_cat2_2b, my_hands_cat3_2b)) # cat3 is a call
+            opponents_hands_cbbf = get_fold_hands(opponents_hands_cb, opponents_hands_cat1_2b, opponents_hands_cat2_2b, opponents_hands_cat3_2b)
+            opponents_hands_cbbc = get_call_hands(opponents_hands_cb, combine_hands(opponents_hands_cat2_2b, opponents_hands_cat3_2b)) # cat3 is a call
+
+            # Combos
+            combos_c = count_hand_combos(my_hands_c)
+            combos_b = count_hand_combos(my_hands_b)
+            combos_cc = count_hand_combos(opponents_hands_cc)
+            combos_cb = count_hand_combos(opponents_hands_cb)
+            combos_bf = count_hand_combos(opponents_hands_bf)
+            combos_bc = count_hand_combos(opponents_hands_bc)
+            combos_bb = count_hand_combos(opponents_hands_bb)
+            combos_cbf = count_hand_combos(my_hands_cbf)
+            combos_cbc = count_hand_combos(my_hands_cbc)
+            combos_cbb = count_hand_combos(my_hands_cbb)
+            combos_bbf = count_hand_combos(my_hands_bbf)
+            combos_bbc = count_hand_combos(my_hands_bbc)
+            combos_cbbf = count_hand_combos(opponents_hands_cbbf)
+            combos_cbbc = count_hand_combos(opponents_hands_cbbc)
+
+            # Cat3 pct_makeup
+            my_cat3_pct_cc = 0
+            my_cat3_pct_cbc = 0
+            my_cat3_pct_cbbc = 0 if combos_cbb == 0 else count_hand_combos(get_raise_hands(my_hands_c, [[],[],[]], my_hands_cat3_1b)) / combos_cbb
+            my_cat3_pct_bc = 0 if combos_b == 0 else count_hand_combos(my_hands_cat3_0b) / combos_b
+            my_cat3_pct_bbc = 0 if combos_bbc == 0 else count_hand_combos(get_raise_hands(my_hands_b, [[],[],[]], my_hands_cat3_2b)) / combos_bbc
+
+            opponents_cat3_pct_cc = 0
+            opponents_cat3_pct_cbc = 0 if combos_cb == 0 else count_hand_combos(opponents_hands_cat3_0b) / combos_cb
+            opponents_cat3_pct_cbbc = 0 if combos_cbbc == 0 else count_hand_combos(get_raise_hands(opponents_hands_cb, [[],[],[]], opponents_hands_cat3_2b)) / combos_cbbc
+            opponents_cat3_pct_bc = 0
+            opponents_cat3_pct_bbc = 0 if combos_bb == 0 else count_hand_combos(opponents_hands_cat3_1b) / combos_bb
+
+
+        #### 1) the % chance of each bet sequence
+        if my_position_ip:
+            pass
+        else:
+            chance_c = combos_c/(combos_c + combos_b)
+            chance_b = combos_b/(combos_c + combos_b)
+            chance_cc = chance_c*(combos_cc/(combos_cc + combos_cb))
+            chance_cb = chance_c*(combos_cb/(combos_cc + combos_cb))
+            chance_bf = chance_b*(combos_bf/(combos_bf + combos_bc + combos_bb))
+            chance_bc = chance_b*(combos_bc/(combos_bf + combos_bc + combos_bb))
+            chance_bb = chance_b*(combos_bb/(combos_bf + combos_bc + combos_bb))
+            chance_cbf = chance_cb*(combos_cbf/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbc = chance_cb*(combos_cbc/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbb = chance_cb*(combos_cbb/(combos_cbf + combos_cbc + combos_cbb))
+            chance_bbf = chance_bb*(combos_bbf/(combos_bbf + combos_bbc))
+            chance_bbc = chance_bb*(combos_bbc/(combos_bbf + combos_bbc))
+            chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
+            chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
+
+        # print("Test that all add to 1.0")
+        chance_c+chance_b, chance_cc+chance_cb+chance_bf+chance_bc+chance_bb, \
+        chance_cc+chance_cbf+chance_cbc+chance_cbb+chance_bf+chance_bc+chance_bbf+chance_bbc, \
+        chance_cc+chance_cbf+chance_cbc+chance_cbbf+chance_cbbc+chance_bf+chance_bc+chance_bbf+chance_bbc
+
+
+
+
+
+        m2 = {14: 'A', 13: 'K', 12: 'Q', 11: 'J', 10: 'T',
+              9: '9', 8: '8', 7: '7', 6: '6', 5: '5',
+              4: '4', 3: '3', 2: '2'}
+        def convert_hands_to_range(hands, flop):
+            result = []
+            for hand in hands[0]:
+                rank = hand[0][0]
+                if hand[1] != 6 and rank not in flop:
+                    result.append(m2[rank] + "s" + m2[rank] + "h")
+                    result.append(m2[rank] + "s" + m2[rank] + "c")
+                    result.append(m2[rank] + "s" + m2[rank] + "d")
+                else:
+                    result.append(m2[rank]*2)
+            for hand in hands[1]:
+                rank1 = hand[0][0]
+                rank2 = hand[0][1]
+                if hand[1] == 4:
+                    result.append(m2[rank1] + m2[rank2])
+                elif hand[1] == 3 and (rank1 in flop or rank2 in flop):
+                    result.append(m2[rank1] + m2[rank2])
+                elif hand[1] == 3:
+                    result.append(m2[rank1] + "s" + m2[rank2] + "s")
+                    result.append(m2[rank1] + "h" + m2[rank2] + "h")
+                    result.append(m2[rank1] + "c" + m2[rank2] + "c")
+                elif hand[1] == 2 and ((rank1 in flop and rank2 in flop) or (rank1 == paired_value or rank2 == paired_value)):
+                    result.append(m2[rank1] + m2[rank2])
+                elif hand[1] == 2:
+                    result.append(m2[rank1] + "s" + m2[rank2] + "s")
+                    result.append(m2[rank1] + "h" + m2[rank2] + "h")
+                elif hand[1] == 1:
+                    result.append(m2[rank1] + "s" + m2[rank2] + "s")
+            for hand in hands[2]:
+                rank1 = hand[0][0]
+                rank2 = hand[0][1]
+                if hand[1] == 12:
+                    result.append(m2[rank1] + m2[rank2])
+                elif rank1 in flop or rank2 in flop:
+                    result.append(m2[rank1] + m2[rank2])
+                elif hand[1] == 6:
+                    # one spade
+                    result.append(m2[rank1] + "s" + m2[rank2] + "h")
+                    result.append(m2[rank1] + "s" + m2[rank2] + "c")
+                    result.append(m2[rank1] + "s" + m2[rank2] + "d")
+                    result.append(m2[rank1] + "h" + m2[rank2] + "s")
+                    result.append(m2[rank1] + "c" + m2[rank2] + "s")
+                    result.append(m2[rank1] + "d" + m2[rank2] + "s")
+                else:
+                    raise Exception # Should never occur, investigate if this occurs
+            return ",".join(result)
+
+
+
+        #### 2) the ranges that go against each other (or who won pot)
+        if my_position_ip:
+            pass
+        else:
+            # Hands version
+            final_my_hands_cc = my_hands_c
+            final_opponents_hands_cc = opponents_hands_cc
+            final_my_hands_cbc = my_hands_cbc
+            final_opponents_hands_cbc = opponents_hands_cb
+            final_my_hands_cbbc = my_hands_cbb
+            final_opponents_hands_cbbc = opponents_hands_cbbc
+            final_my_hands_bc = my_hands_b
+            final_opponents_hands_bc = opponents_hands_bc
+            final_my_hands_bbc = my_hands_bbc
+            final_opponents_hands_bbc = opponents_hands_bb
+
+            # String version for Equilab
+            final_my_hands_cc_string = convert_hands_to_range(my_hands_c, flop)
+            final_opponents_hands_cc_string = convert_hands_to_range(opponents_hands_cc, flop)
+            final_my_hands_cbc_string = convert_hands_to_range(my_hands_cbc, flop)
+            final_opponents_hands_cbc_string = convert_hands_to_range(opponents_hands_cb, flop)
+            final_my_hands_cbbc_string = convert_hands_to_range(my_hands_cbb, flop)
+            final_opponents_hands_cbbc_string = convert_hands_to_range(opponents_hands_cbbc, flop)
+            final_my_hands_bc_string = convert_hands_to_range(my_hands_b, flop)
+            final_opponents_hands_bc_string = convert_hands_to_range(opponents_hands_bc, flop)
+            final_my_hands_bbc_string = convert_hands_to_range(my_hands_bbc, flop)
+            final_opponents_hands_bbc_string = convert_hands_to_range(opponents_hands_bb, flop)
+
+            # Flop as string (won't get a card twice due to exceptions thrown far above)
+            if board_type == "rainbow":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "c"
+            elif board_type == "two-tone":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "s"
+            elif board_type == "monotone":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "s" + m2[flop[2]] + "s"
+
+
+
+
+          # #### 3) Equilab control mouse and save equity
+        import pyautogui as g
+        from time import sleep
+        import pyperclip as clip
+        g.FAILSAFE = True
+        # g.position()
+
+        def c():
+            g.click(button='left')
+
+        def c2():
+            g.click(clicks=2)
+
+        def rc():
+            g.click(button='right')
+
+        def paste():
+            g.keyDown('ctrl')
+            g.keyDown('v')
+            g.keyUp('v')
+            g.keyUp('ctrl')
+
+        def copy_text():
+            g.keyDown('ctrl')
+            g.keyDown('c')
+            g.keyUp('c')
+            g.keyUp('ctrl')
+
+
+        # Click on screen
+        g.moveTo(791, 398)
+        c()
+
+
+
+
+        equity_cc = 0.50
+        equity_cbc = 0.50
+        equity_cbbc = 0.50
+        equity_bc = 0.50
+        equity_bbc = 0.50
+        if my_position_ip:
+            pass
+        else:
+            actions = ["cc", "cbc", "cbbc", "bc", "bbc"]
+            mine_temp = [final_my_hands_cc_string, final_my_hands_cbc_string, final_my_hands_cbbc_string, final_my_hands_bc_string, final_my_hands_bbc_string]
+            opponents_temp = [final_opponents_hands_cc_string, final_opponents_hands_cbc_string, final_opponents_hands_cbbc_string, final_opponents_hands_bc_string, final_opponents_hands_bbc_string]
+            for action, my_hands_string, opponents_hands_string in zip(actions, mine_temp, opponents_temp):
+                # If empty range, continue
+                if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
+                    continue
+
+                # Clear all
+                g.moveTo(959, 396)
+                c()
+
+                # Flop
+                clip.copy(final_flop_string)
+                g.moveTo(784, 320)
+                c()
+                paste()
+
+                # Hand range 1
+                clip.copy(my_hands_string)
+                g.moveTo(972, 156)
+                c()
+                paste()
+
+                # Hand range 2
+                clip.copy(opponents_hands_string)
+                g.moveTo(999, 179)
+                c()
+                paste()
+
+                # Evaluate button
+                g.moveTo(1377, 394)
+                c()
+
+                # Sleep
+                sleep(1)
+
+                # Copy equity
+                g.moveTo(1396, 158)
+                c2()
+                copy_text()
+
+                # Save raw equity
+                raw_equity_string = clip.paste()
+                raw_equity = float(raw_equity_string.replace("%",""))/100
+
+                # Adjust for position and implied odds
+                # (assuming cat3 is only one with implied odds; not entirely true but fine)
+                # 3 represents +/- 3%, 0.5 represents maximum difference expected
+                # - 0.03 represents unrealized equity from being out of position
+                if action == "cc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100
+                    equity_cc = raw_equity - 0.03 + implied_odds_adjustment
+                elif action == "cbc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100
+                    equity_cbc = raw_equity - 0.03 + implied_odds_adjustment
+                elif action == "cbbc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100
+                    equity_cbbc = raw_equity - 0.03 + implied_odds_adjustment
+                elif action == "bc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100
+                    equity_bc = raw_equity - 0.03 + implied_odds_adjustment
+                else:
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100
+                    equity_bbc = raw_equity - 0.03 + implied_odds_adjustment
+
+
+
+
+
+
+
+        #### 4) The pot size in each situation including fold situations
+        if my_position_ip:
+            pass
+        else:
+            winnings_cc = pot_size*equity_cc
+            winnings_cbf = 0
+            cbc_pot_size = (pot_size + (pot_size*opponents_bet_size)*2)
+            winnings_cbc = cbc_pot_size*equity_cbc
+            winnings_cbbf = (cbc_pot_size + (cbc_pot_size*my_bet_size))
+            winnings_cbbc = (cbc_pot_size + (cbc_pot_size*my_bet_size)*2)*equity_cbbc
+            winnings_bf = pot_size + (pot_size*my_bet_size)
+            bc_pot_size = (pot_size + (pot_size*my_bet_size)*2)
+            winnings_bc = bc_pot_size*equity_bc
+            winnings_bbf = 0
+            winnings_bbc = (bc_pot_size + (bc_pot_size*opponents_bet_size)*2)*equity_bbc
+
+            my_investment_cc = my_investment
+            my_investment_cbf = my_investment
+            my_investment_cbc = my_investment + (opponents_bet_size*pot_size)
+            my_investment_cbbf = my_investment + (opponents_bet_size*pot_size) + (cbc_pot_size*my_bet_size)
+            my_investment_cbbc = my_investment + (opponents_bet_size*pot_size) + (cbc_pot_size*my_bet_size)
+            my_investment_bf = my_investment + (pot_size*my_bet_size)
+            my_investment_bc = my_investment + (pot_size*my_bet_size)
+            my_investment_bbf = my_investment + (pot_size*my_bet_size)
+            my_investment_bbc = my_investment + (pot_size*my_bet_size) + (bc_pot_size*opponents_bet_size)
+
+            # Final profit amount
+            profit = (winnings_cc-my_investment_cc)*chance_cc + \
+                     (winnings_cbf-my_investment_cbf)*chance_cbf + \
+                     (winnings_cbc-my_investment_cbc)*chance_cbc + \
+                     (winnings_cbbf-my_investment_cbbf)*chance_cbbf + \
+                     (winnings_cbbc-my_investment_cbbc)*chance_cbbc + \
+                     (winnings_bf-my_investment_bf)*chance_bf + \
+                     (winnings_bc-my_investment_bc)*chance_bc + \
+                     (winnings_bbf-my_investment_bbf)*chance_bbf + \
+                     (winnings_bbc-my_investment_bbc)*chance_bbc
+
+        print("Profit: %.3f" % (profit))
+
+
+        if profit > max_profit:
+            max_profit = profit
+            profits['0b'].append(cat3_level_0b)
+            profits['1b'].append(cat3_level_1b)
+            profits['2b'].append(cat3_level_2b)
+            profits['profit'].append(profit)
+            profits['flop'].append(flop)
+            profits['board_type'].append(board_type)
+
+        if profit < last_profit and profit_became_worse:
+            profit_became_worse_twice = True
+        elif profit < last_profit:
+            profit_became_worse = True
+        last_profit = profit
+
+        return profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit
+
+        # pot_size = 6.5
+        # my_investment = 2.5
+        # opponents_bet_size = 0.60
+        # my_bet_size
+
+
+
+
+
+    # ***
+    #  (outside a flop changing loop for now, but can add that later)
+
+    # Initialize loop
+    profit_became_worse = False
+    profit_became_worse_twice = False
+    for cat3_level_0b in range(0, 20):
+        cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
+        cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+
+        # Run main
+        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+
+        if profit_became_worse_twice:
+            break
+
+    # Set best 0b
+    max_profit_index = np.argmax(profits['profit'])
+    cat3_level_0b = profits['0b'][max_profit_index]
+    cat3_level_1b = profits['1b'][max_profit_index]
+    cat3_level_2b = profits['2b'][max_profit_index]
+
+
+    profit_became_worse = False
+    profit_became_worse_twice = False
+    for new_cat3_level_1b in range(cat3_level_1b-1, 20):
+        if cat3_level_1b > cat3_level_0b: # Current constraint on this being lte than 0b, just to speed it up
+            break
+        cat3_level_1b = new_cat3_level_1b
+        cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+
+        # Run main
+        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+
+        if profit_became_worse_twice:
+            break
+
+    # Set best 1b
+    max_profit_index = np.argmax(profits['profit'])
+    cat3_level_0b = profits['0b'][max_profit_index]
+    cat3_level_1b = profits['1b'][max_profit_index]
+    cat3_level_2b = profits['2b'][max_profit_index]
+
+
+
+    profit_became_worse = False
+    profit_became_worse_twice = False
+    for new_cat3_level_2b in range(cat3_level_2b-1, 20):
+        if cat3_level_2b > cat3_level_1b: # Current constraint on this being lte than 0b, just to speed it up
+            break
+        cat3_level_2b = new_cat3_level_2b
+
+        # Run main
+        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+
+        if profit_became_worse_twice:
+            break
+
+    print(profits)
+    df = pd.DataFrame(profits)
+    print(df)
+    df.to_csv("../../reports/results/range_name_{}.csv".format(str(i).zfill(3)))
+    i += 1
+
+
+
 
 
 
