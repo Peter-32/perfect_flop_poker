@@ -661,11 +661,12 @@ for rank1 in range(14,1,-1):
                 flops.append([rank1, rank2, rank3])
 
 
-max_profit = -100
-last_profit = -100
-profits = {'flop': [], 'board_type': [], '0b': [], '1b': [], '2b': [], 'profit': []}
+
 i = 0
 for flop in flops:
+    max_profit = -100
+    last_profit = -100
+    profits = {'flop': [], 'board_type': [], '0b': [], '1b': [], '2b': [], 'profit': []}
 
     # ***
     # Focus on one flop for now, later iterate through all of them
@@ -694,9 +695,9 @@ for flop in flops:
 
     # Check for invalid flop + board type
     if board_type == "monotone" and is_paired:
-        raise Exception
+        continue
     if board_type == "two-tone" and flop[0] == flop[2]:
-        raise Exception
+        continue
 
     opponent_unraised_strategy = {
         'cat1': {1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9},
