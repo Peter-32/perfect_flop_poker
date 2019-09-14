@@ -1,0 +1,24 @@
+vs 0:
+cat1: 8 always
+cat2: 5 but 7 when IP and one of the following: low, paired, PFR
+
+ or 1 raise:
+ cat1: 6
+ cat2: 5 but 7 when IP and one of the following: low, paired, PFR
+
+vs 2 raise:
+0 always
+cat2: Always 3
+
+
+
+Search for cat3:
+================
+0b is highest among 0b, 1b, 2b
+Start off with:
+0b = 1   goes up one at a time
+1b = at least 11 (2/3 of 0b)
+2b = at least 1 (2/3 of 1b)
+
+Then decrease 1b by one and go one up at a time, continue with same 2b ratio
+Then decrease 2b by one and go one up at a time

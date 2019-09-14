@@ -1,10 +1,8 @@
-import math
+import pandas as pd
 import itertools
 import functools
-import numpy as np
-import pandas as pd
-from copy import deepcopy
 from collections import defaultdict
+from copy import deepcopy
 
 # RFI
 lj_rfi = "55+,A2s+,K9s+,Q9s+,J9s+,T9s,98s,87s,76s,AJo+,KQo+"
@@ -623,12 +621,12 @@ def opponents_hands_cat3_level_x_and_above(x, opponents_hands_cat1, opponents_ha
 opponent_unraised_strategy = None # To be defined later; changes by flop
 opponent_raised_strategy = {
     'cat1': {1: 6, 2: 6, 3: 6, 4: 6, 5: 6, 6: 6, 7: 6},
-    'cat2': {1: 3, 2: 5, 3: 6, 4: 6, 5: 7, 6: 7, 7: 7},
+    'cat2': {1: 2, 2: 5, 3: 6, 4: 6, 5: 7, 6: 7, 7: 7},
     'cat3': {1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 5, 7: 5},
 }
 opponent_reraised_strategy = {
     'cat1': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0},
-    'cat2': {1: 3, 2: 3, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3},
+    'cat2': {1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 2, 7: 2},
     'cat3': {1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 3, 7: 3},
 }
 opponent_strategy = None
@@ -965,50 +963,49 @@ else:
 
 
 
-def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
 
-    # Determine my strategy this hand
-    my_hands_cat1_0b = my_hands_cat1_level_x_and_above(8)  # Always 8
 
-    # If IP + (flop type 6 or 7 or PFR)
-    if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
-        my_hands_cat2_0b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_0b)
+
+
+
+# Determine my strategy this hand
+my_hands_cat1_0b = my_hands_cat1_level_x_and_above(8)
+my_hands_cat2_0b = my_hands_cat2_level_x_and_above(6, my_hands_cat1_0b)
+my_hands_cat3_0b = None
+
+# Interim step (50:50 to 30:70 ratio cat1 to cat3)
+cat3_combos_0b_lb = sum([y for (x,y) in my_hands_cat1_0b[0]])+sum([y for (x,y) in my_hands_cat1_0b[1]])+sum([y for (x,y) in my_hands_cat1_0b[2]])
+cat3_combos_0b_ub = cat3_combos_0b_lb * 2.3
+
+# Initialize
+my_cat3_level_lb = 1
+my_cat3_level_ub = 21
+
+# Find bounds
+cat3_combos = 0
+for i in range(20):
+    if cat3_combos >= cat3_combos_0b_lb:
+        break
     else:
-        my_hands_cat2_0b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_0b)
-    my_hands_cat3_0b = None
+        my_cat3_level_lb += 1
+    my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_0b, my_hands_cat2_0b)
+    cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
+
+cat3_combos = 400
+for i in range(20):
+    if cat3_combos <= cat3_combos_0b_ub:
+        break
+    else:
+        my_cat3_level_ub -= 1
+    my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_0b, my_hands_cat2_0b)
+    cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
+
+# Print bounds
+print("0b: my_cat3_level_lb", my_cat3_level_lb)
+print("0b: my_cat3_level_ub", my_cat3_level_ub)
 
 
-    # # Removed because these constraints are unprofitable as of now
-    # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_0b_lb = sum([y for (x,y) in my_hands_cat1_0b[0]])+sum([y for (x,y) in my_hands_cat1_0b[1]])+sum([y for (x,y) in my_hands_cat1_0b[2]])
-    # cat3_combos_0b_ub = cat3_combos_0b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21
-    #
-    # # Find bounds
-    # cat3_combos = 0
-    # for i in range(20):
-    #     if cat3_combos >= cat3_combos_0b_lb:
-    #         break
-    #     else:
-    #         my_cat3_level_lb += 1
-    #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_0b, my_hands_cat2_0b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
-    #
-    # cat3_combos = 400
-    # for i in range(20):
-    #     if cat3_combos <= cat3_combos_0b_ub:
-    #         break
-    #     else:
-    #         my_cat3_level_ub -= 1
-    #     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_0b, my_hands_cat2_0b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_0b[0]])+sum([y for (x,y) in my_hands_cat3_0b[1]])+sum([y for (x,y) in my_hands_cat3_0b[2]])
-
-    # Print bounds
-    # print("0b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("0b: my_cat3_level_ub", my_cat3_level_ub)
+for cat3_level_0b in range(1, 6):
 
     my_hands_cat3_0b = my_hands_cat3_level_x_and_above(cat3_level_0b, my_hands_cat1_0b, my_hands_cat2_0b)
 
@@ -1016,46 +1013,45 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
 
 
 
+
+
     # Determine my strategy this hand
-    my_hands_cat1_1b = my_hands_cat1_level_x_and_above(6)
-    if my_position_ip and (flop_type_number >= 6 or not opponent_pfr):
-        my_hands_cat2_1b = my_hands_cat2_level_x_and_above(7, my_hands_cat1_1b)
-    else:
-        my_hands_cat2_1b = my_hands_cat2_level_x_and_above(5, my_hands_cat1_1b)
+    my_hands_cat1_1b = my_hands_cat1_level_x_and_above(5)
+    my_hands_cat2_1b = my_hands_cat2_level_x_and_above(6, my_hands_cat1_1b)
     my_hands_cat3_1b = None
 
-    # # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_1b_lb = sum([y for (x,y) in my_hands_cat1_1b[0]])+sum([y for (x,y) in my_hands_cat1_1b[1]])+sum([y for (x,y) in my_hands_cat1_1b[2]])
-    # cat3_combos_1b_ub = cat3_combos_1b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21
-    #
-    # # Find bounds
-    # cat3_combos = 0
-    # for i in range(20):
-    #     if cat3_combos >= cat3_combos_1b_lb:
-    #         break
-    #     else:
-    #         my_cat3_level_lb += 1
-    #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_1b, my_hands_cat2_1b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
-    #
-    # cat3_combos = 400
-    # for i in range(20):
-    #     if cat3_combos <= cat3_combos_1b_ub:
-    #         break
-    #     else:
-    #         my_cat3_level_ub -= 1
-    #     my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_1b, my_hands_cat2_1b)
-    #     cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
+    # Interim step (50:50 to 30:70 ratio cat1 to cat3)
+    cat3_combos_1b_lb = sum([y for (x,y) in my_hands_cat1_1b[0]])+sum([y for (x,y) in my_hands_cat1_1b[1]])+sum([y for (x,y) in my_hands_cat1_1b[2]])
+    cat3_combos_1b_ub = cat3_combos_1b_lb * 2.3
+
+    # Initialize
+    my_cat3_level_lb = 1
+    my_cat3_level_ub = 21
+
+    # Find bounds
+    cat3_combos = 0
+    for i in range(20):
+        if cat3_combos >= cat3_combos_1b_lb:
+            break
+        else:
+            my_cat3_level_lb += 1
+        my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_lb, my_hands_cat1_1b, my_hands_cat2_1b)
+        cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
+
+    cat3_combos = 400
+    for i in range(20):
+        if cat3_combos <= cat3_combos_1b_ub:
+            break
+        else:
+            my_cat3_level_ub -= 1
+        my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_1b, my_hands_cat2_1b)
+        cat3_combos = sum([y for (x,y) in my_hands_cat3_1b[0]])+sum([y for (x,y) in my_hands_cat3_1b[1]])+sum([y for (x,y) in my_hands_cat3_1b[2]])
 
     # Print bounds
-    # print("1b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("1b: my_cat3_level_ub", my_cat3_level_ub)
+    print("1b: my_cat3_level_lb", my_cat3_level_lb)
+    print("1b: my_cat3_level_ub", my_cat3_level_ub)
 
-    my_hands_cat3_1b = my_hands_cat3_level_x_and_above(cat3_level_1b, my_hands_cat1_1b, my_hands_cat2_1b)
+    my_hands_cat3_1b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_1b, my_hands_cat2_1b)
 
 
 
@@ -1068,23 +1064,19 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
     my_hands_cat3_2b = None
 
     # Interim step (50:50 to 30:70 ratio cat1 to cat3)
-    # cat3_combos_2b_lb = sum([y for (x,y) in my_hands_cat1_2b[0]])+sum([y for (x,y) in my_hands_cat1_2b[1]])+sum([y for (x,y) in my_hands_cat1_2b[2]])
-    # cat3_combos_2b_ub = cat3_combos_2b_lb * 2.3
-    #
-    # # Initialize
-    # my_cat3_level_lb = 1
-    # my_cat3_level_ub = 21  # Can lower this to something like 10 or lower once experimenting on a few hands
-    # # We are just calling with our cat3 hands
+    cat3_combos_2b_lb = sum([y for (x,y) in my_hands_cat1_2b[0]])+sum([y for (x,y) in my_hands_cat1_2b[1]])+sum([y for (x,y) in my_hands_cat1_2b[2]])
+    cat3_combos_2b_ub = cat3_combos_2b_lb * 2.3
+
+    # Initialize
+    my_cat3_level_lb = 1
+    my_cat3_level_ub = 21  # Can lower this to something like 10 or lower once experimenting on a few hands
+    # We are just calling with our cat3 hands
 
     # Print bounds
-    # print("2b: my_cat3_level_lb", my_cat3_level_lb)
-    # print("2b: my_cat3_level_ub", my_cat3_level_ub)
+    print("2b: my_cat3_level_lb", my_cat3_level_lb)
+    print("2b: my_cat3_level_ub", my_cat3_level_ub)
 
-
-
-
-
-    my_hands_cat3_2b = my_hands_cat3_level_x_and_above(cat3_level_2b, my_hands_cat1_2b, my_hands_cat2_2b)
+    my_hands_cat3_2b = my_hands_cat3_level_x_and_above(my_cat3_level_ub, my_hands_cat1_2b, my_hands_cat2_2b)
 
 
 
@@ -1257,7 +1249,7 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
         chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
         chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
 
-    # print("Test that all add to 1.0")
+    print("Test that all add to 1.0")
     chance_c+chance_b, chance_cc+chance_cb+chance_bf+chance_bc+chance_bb, \
     chance_cc+chance_cbf+chance_cbc+chance_cbb+chance_bf+chance_bc+chance_bbf+chance_bbc, \
     chance_cc+chance_cbf+chance_cbc+chance_cbbf+chance_cbbc+chance_bf+chance_bc+chance_bbf+chance_bbc
@@ -1510,22 +1502,7 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
                  (winnings_bbf-my_investment_bbf)*chance_bbf + \
                  (winnings_bbc-my_investment_bbc)*chance_bbc
 
-    print("Profit: %.3f" % (profit))
-
-
-    if profit > max_profit:
-        max_profit = profit
-        profits['0b'].append(cat3_level_0b)
-        profits['1b'].append(cat3_level_1b)
-        profits['2b'].append(cat3_level_2b)
-        profits['profit'].append(profit)
-
-    if profit < last_profit and profit_became_worse:
-        profit_became_worse_twice = True
-        last_profit = profit
-        return profit_became_worse_twice, profits, max_profit
-    elif profit < last_profit:
-        profit_became_worse = True
+    print("cat3_level_0b: %s Profit: %.3f" % (cat3_level_0b, profit))
 
 
     # pot_size = 6.5
@@ -1534,73 +1511,6 @@ def main(cat3_level_0b, cat3_level_1b, cat3_level_2b):
     # my_bet_size
 
 
-
-
-
-
-# Initialize loop variables (outside a flop changing loop for now, but can add that later) *******
-max_profit = -100
-last_profit = -100
-profits = {'0b': [], '1b': [], '2b': [], 'profit': []}
-
-# Initialize loop
-profit_became_worse = False
-profit_became_worse_twice = False
-for cat3_level_0b in range(0, 20):
-    cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
-    cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
-
-    # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
-
-    if profit_became_worse_twice:
-        break
-
-# Set best 0b
-max_profit_index = np.argmax(profits['profit'])
-cat3_level_0b = profits['0b'][max_profit_index]
-cat3_level_1b = profits['1b'][max_profit_index]
-cat3_level_2b = profits['2b'][max_profit_index]
-
-
-profit_became_worse = False
-profit_became_worse_twice = False
-for new_cat3_level_1b in range(cat3_level_1b-1, 20):
-    cat3_level_1b = new_cat3_level_1b
-    cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
-
-    # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
-
-    if profit_became_worse_twice:
-        break
-
-# Set best 1b
-max_profit_index = np.argmax(profits['profit'])
-cat3_level_0b = profits['0b'][max_profit_index]
-cat3_level_1b = profits['1b'][max_profit_index]
-cat3_level_2b = profits['2b'][max_profit_index]
-
-
-
-profit_became_worse = False
-profit_became_worse_twice = False
-for new_cat3_level_2b in range(cat3_level_2b-1, 20):
-    cat3_level_2b = new_cat3_level_2b
-
-    # Run main
-    profit_became_worse_twice, profits, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b)
-
-    if profit_became_worse_twice:
-        break
-
-print(profits)
-df = pd.DataFrame(profits)
-print(df)
-df.to_csv("results.csv")
 
 
 
