@@ -660,9 +660,9 @@ for rank1 in range(14,1,-1):
             if rank1 >= rank2 and rank2 >= rank3:
                 flops.append([rank1, rank2, rank3])
 
+flops = flops[267:]
 
-
-i = 0
+i = 263
 for flop in flops:
     max_profit = -100
     last_profit = -100
@@ -1379,6 +1379,7 @@ for flop in flops:
         from time import sleep
         import pyperclip as clip
         g.FAILSAFE = True
+        g.PAUSE = 0.0
         # g.position()
 
         def c():
@@ -1426,43 +1427,67 @@ for flop in flops:
                 if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
                     continue
 
-                # Clear all
-                g.moveTo(959, 396)
-                c()
+                sleep_length = 0.06
+                is_success = True
+                for _ in range(100):
+                    # Clear all
+                    g.moveTo(959, 396)
+                    c()
 
-                # Flop
-                clip.copy(final_flop_string)
-                g.moveTo(784, 320)
-                c()
-                paste()
+                    # Flop
+                    clip.copy(final_flop_string)
+                    sleep(sleep_length)
+                    g.moveTo(784, 320)
+                    c()
+                    paste()
+                    sleep(sleep_length*5)
 
-                # Hand range 1
-                clip.copy(my_hands_string)
-                g.moveTo(972, 156)
-                c()
-                paste()
+                    # Hand range 1
+                    clip.copy(my_hands_string)
+                    sleep(sleep_length)
+                    g.moveTo(972, 156)
+                    c()
+                    paste()
+                    sleep(sleep_length*5)
 
-                # Hand range 2
-                clip.copy(opponents_hands_string)
-                g.moveTo(999, 179)
-                c()
-                paste()
+                    # Hand range 2 (Hopefully it doesn't copy the first hand twice)
+                    clip.copy("ABC")
+                    clip.copy(opponents_hands_string)
+                    sleep(sleep_length)
+                    g.moveTo(999, 179)
+                    c()
+                    paste()
+                    sleep(sleep_length)
 
-                # Evaluate button
-                g.moveTo(1377, 394)
-                c()
+                    # Evaluate button
+                    g.moveTo(1377, 394)
+                    c()
 
-                # Sleep
-                sleep(1)
+                    # # Stop monteo carlo (Decided to use Enumerate all)
+                    # sleep(sleep_length)
+                    # g.moveTo(1206, 398)
+                    # c()
 
-                # Copy equity
-                g.moveTo(1396, 158)
-                c2()
-                copy_text()
+                    # Copy equity
+                    sleep(sleep_length*3.3)
+                    g.moveTo(1396, 158)
+                    c2()
+                    copy_text()
+                    sleep(sleep_length/3)
 
-                # Save raw equity
-                raw_equity_string = clip.paste()
-                raw_equity = float(raw_equity_string.replace("%",""))/100
+                    # Save raw equity
+                    raw_equity_string = clip.paste()
+
+                    # Possibly repeat loop
+                    try:
+                        raw_equity = float(raw_equity_string.replace("%",""))/100
+                        is_success = True
+                    except:
+                        is_success = False
+                        sleep_length = sleep_length*1.1
+
+                    if is_success:
+                        break
 
                 # Adjust for position and implied odds
                 # (assuming cat3 is only one with implied odds; not entirely true but fine)
