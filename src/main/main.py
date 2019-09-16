@@ -1587,7 +1587,7 @@ for flop in flops:
     # Initialize loop
     profit_became_worse = False
     profit_became_worse_twice = False
-    for cat3_level_0b in range(1, 6):
+    for cat3_level_0b in range(1, 5):
         cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
         cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
