@@ -15,38 +15,41 @@ sb_rfi = "22+,A2s+,K3s+,Q5s+,J6s+,T6s+,96s+,85s+,75s+,64s+,53s+,43s,A2o+,K8o+,Q9
 
 # vs RFI
 vsRFI_bb_vs_lj__raise = "TT+,AQs+,AKo"
-vsRFI_bb_vs_lj__call = "99-22,AJs-A2s,K6s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,54s,AQo-ATo,KTo+,QTo+,JTo"
 vsRFI_bb_vs_hj__raise = "TT+,ATs+,AKo"
-vsRFI_bb_vs_hj__call = "99-22,A9s-A2s,K5s+,Q7s+,J7s+,T7s+,96s+,86s+,75s+,65s,54s,43s,AQo-ATo,KTo+,QTo+,JTo"
 vsRFI_bb_vs_co__raise = "99+,A8s+,KJs+,QJs,JTs,T9s,98s,AQo+,KQo"
-vsRFI_bb_vs_co__call = "88-22,A7s-A2s,KTs-K2s,QTs-Q5s,J9s-J6s,T8s-T6s,97s-96s,85s+,74s+,64s+,53s+,43s,AJo-A7o,A5o,KJo-K9o,Q9o+,J9o+,T9o"
 vsRFI_bb_vs_bn__raise = "88+,A6s+,KTs+,QTs+,JTs,T9s,98s,87s,76s,AJo+,KQo"
-vsRFI_bb_vs_bn__call = "77-22,A5s-A2s,K9s-K2s,Q9s-Q2s,J9s-J5s,T8s-T5s,97s-95s,86s-84s,75s-74s,63s+,53s+,42s+,32s,ATo-A2o,KJo-K7o,Q8o+,J8o+,T8o+,98o,87o"
 vsRFI_bb_vs_sb__raise = "44+,A8s+,A5s-A3s,K9s+,Q9s+,J9s,T8s+,97s+,86s+,75s+,64s+,54s,AJo+,KQo"
+
+vsRFI_bb_vs_lj__call = "99-22,AJs-A2s,K6s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,54s,AQo-ATo,KTo+,QTo+,JTo"
+vsRFI_bb_vs_hj__call = "99-22,A9s-A2s,K5s+,Q7s+,J7s+,T7s+,96s+,86s+,75s+,65s,54s,43s,AQo-ATo,KTo+,QTo+,JTo"
+vsRFI_bb_vs_co__call = "88-22,A7s-A2s,KTs-K2s,QTs-Q5s,J9s-J6s,T8s-T6s,97s-96s,85s+,74s+,64s+,53s+,43s,AJo-A7o,A5o,KJo-K9o,Q9o+,J9o+,T9o"
+vsRFI_bb_vs_bn__call = "77-22,A5s-A2s,K9s-K2s,Q9s-Q2s,J9s-J5s,T8s-T5s,97s-95s,86s-84s,75s-74s,63s+,53s+,42s+,32s,ATo-A2o,KJo-K7o,Q8o+,J8o+,T8o+,98o,87o"
 vsRFI_bb_vs_sb__call = "33-22,A7s-A6s,A2s,K8s-K2s,Q8s-Q2s,J8s-J4s,T7s-T4s,96s-94s,85s-84s,74s-73s,63s-62s,53s-52s,42s+,32s,ATo-A2o,KJo-K5o,Q7o+,J7o+,T7o+,97o+,87o,76o,65o"
 
 # vs RFI
 vsRFI_hj_vs_lj__raise = "JJ+,AJs+,KQs,AKo"
-vsRFI_hj_vs_lj__call = "TT-77,ATs,KJs,QJs,JTs,AQo"
 vsRFI_co_vs_lj__raise = "JJ+,AJs+,KQs,AKo"
-vsRFI_co_vs_lj__call = "TT-66,ATs,KJs,QJs,JTs,AQo"
 vsRFI_co_vs_hj__raise = "JJ+,AJs+,A5s-A4s,KQs,T9s,AQo+"
-vsRFI_co_vs_hj__call = "TT-55,ATs,KJs,QJs,JTs"
 vsRFI_bn_vs_lj__raise = "JJ+,AKs,A5s-A2s,AKo"
-vsRFI_bn_vs_lj__call = "TT-55,AQs-ATs,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
 vsRFI_bn_vs_hj__raise = "JJ+,AJs+,A8s,A5s-A2s,KQs,76s,65s,54s,AKo"
-vsRFI_bn_vs_hj__call = "TT-33,ATs-A9s,KJs-KTs,QTs+,JTs,T9s,98s,87s,AQo-AJo,KQo"
 vsRFI_bn_vs_co__raise = "TT+,ATs+,A7s-A2s,KJs+,QJs,JTs,T9s,76s,65s,54s,AJo+,KQo"
-vsRFI_bn_vs_co__call = "99-22,A9s-A8s,KTs,QTs,98s,87s"
 vsRFI_sb_vs_lj__raise = "JJ+,ATs+,KQs,AKo"
-vsRFI_sb_vs_lj__call = "TT-77,QJs,JTs,AQo"
 vsRFI_sb_vs_hj__raise = "JJ+,ATs+,KJs+,QJs,JTs,AQo+"
-vsRFI_sb_vs_hj__call = "TT-66,T9s"
 vsRFI_sb_vs_co__raise = "JJ+,A9s+,A5s-A4s,KJs+,QJs,JTs,T9s,98s,AJo+,KQo"
-vsRFI_sb_vs_co__call = "TT-55,KTs,QTs"
 vsRFI_sb_vs_bn__raise = "55+,A2s+,K9s+,Q9s+,J9s+,T8s+,98s,87s,76s,ATo+,KQo+"
+
+vsRFI_hj_vs_lj__call = "TT-77,ATs,KJs,QJs,JTs,AQo"
+vsRFI_co_vs_lj__call = "TT-66,ATs,KJs,QJs,JTs,AQo"
+vsRFI_co_vs_hj__call = "TT-55,ATs,KJs,QJs,JTs"
+vsRFI_bn_vs_lj__call = "TT-55,AQs-ATs,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
+vsRFI_bn_vs_hj__call = "TT-33,ATs-A9s,KJs-KTs,QTs+,JTs,T9s,98s,87s,AQo-AJo,KQo"
+vsRFI_bn_vs_co__call = "99-22,A9s-A8s,KTs,QTs,98s,87s"
+vsRFI_sb_vs_lj__call = "TT-77,QJs,JTs,AQo"
+vsRFI_sb_vs_hj__call = "TT-66,T9s"
+vsRFI_sb_vs_co__call = "TT-55,KTs,QTs"
 vsRFI_sb_vs_bn__call = ""
 
+# These look similar
 RFIvs3B_lj_vs_hjco_call = "JJ-77,AQs-AJs,KQs,QJs,JTs"
 RFIvs3B_lj_vs_bn_call = "JJ-77,AQs-AJs,KJs+,QJs,JTs,T9s"
 RFIvs3B_lj_vs_blinds_call = "JJ-66,AQs-ATs,KJs+,QJs,JTs,T9s"
@@ -660,9 +663,10 @@ for rank1 in range(14,1,-1):
             if rank1 >= rank2 and rank2 >= rank3:
                 flops.append([rank1, rank2, rank3])
 
-flops = flops[406:]
+# # Start from a spot
+# flops = flops[406:]
 
-i = 398
+i = 0
 for flop in flops:
     max_profit = -100
     last_profit = -100
@@ -1436,7 +1440,7 @@ for flop in flops:
 
                     # Flop
                     clip.copy(final_flop_string)
-                    sleep(sleep_length)
+                    sleep(sleep_length*5)
                     g.moveTo(784, 320)
                     c()
                     paste()
@@ -1608,6 +1612,8 @@ for flop in flops:
     # Try 8, 10, 16
 
     for cat3_level_0b in [8, 10, 16]:
+        if last_profit < max_profit and cat3_level_0b == 10: # Skip 10 if 8 gave no improvement (but still continue to 16 for now)
+            continue
         cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
         cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
