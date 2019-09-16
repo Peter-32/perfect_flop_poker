@@ -1587,7 +1587,7 @@ for flop in flops:
     # Initialize loop
     profit_became_worse = False
     profit_became_worse_twice = False
-    for cat3_level_0b in range(0, 20):
+    for cat3_level_0b in range(1, 6):
         cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
         cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
@@ -1605,14 +1605,15 @@ for flop in flops:
     cat3_level_2b = profits['2b'][max_profit_index]
 
 
-    # Try 16
-    cat3_level_0b = 16
-    cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
-    cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+    # Try 8, 10, 16
 
-    # Run main
-    profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
-        main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+    for cat3_level_0b in [8, 10, 16]:
+        cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
+        cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+
+        # Run main
+        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
 
     # Set best 0b
     max_profit_index = np.argmax(profits['profit'])
@@ -1623,47 +1624,51 @@ for flop in flops:
 
 
 
-
-    profit_became_worse = False
-    profit_became_worse_twice = False
-    for new_cat3_level_1b in range(cat3_level_1b-1, 20):
-        if new_cat3_level_1b == cat3_level_1b:
-            continue
-        if new_cat3_level_1b > cat3_level_0b + 1: # Current constraint on this being lte than about 0b, just to speed it up
-            break
-        cat3_level_1b = new_cat3_level_1b
-        cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
-
-        # Run main
-        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
-            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
-
-        if profit_became_worse: # Used to be profit_became_worse_twice
-            break
-
-    # Set best 1b
-    max_profit_index = np.argmax(profits['profit'])
-    cat3_level_0b = profits['0b'][max_profit_index]
-    cat3_level_1b = profits['1b'][max_profit_index]
-    cat3_level_2b = profits['2b'][max_profit_index]
-
-
-
-    profit_became_worse = False
-    profit_became_worse_twice = False
-    for new_cat3_level_2b in range(cat3_level_2b-1, 20):
-        if new_cat3_level_2b == cat3_level_2b:
-            continue
-        if new_cat3_level_2b > cat3_level_1b + 1: # Current constraint on this being lte than about 0b, just to speed it up
-            break
-        cat3_level_2b = new_cat3_level_2b
-
-        # Run main
-        profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
-            main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
-
-        if profit_became_worse: # Used to be profit_became_worse_twice
-            break
+    # Commenting out because it improves profit by only 1% and increases computation time drastically, and makes it hard to memorize and record
+    # Commenting out because it improves profit by only 1% and increases computation time drastically, and makes it hard to memorize and record
+    # Commenting out because it improves profit by only 1% and increases computation time drastically, and makes it hard to memorize and record
+    #
+    #
+    # profit_became_worse = False
+    # profit_became_worse_twice = False
+    # for new_cat3_level_1b in range(cat3_level_1b-1, 20):
+    #     if new_cat3_level_1b == cat3_level_1b:
+    #         continue
+    #     if new_cat3_level_1b > cat3_level_0b + 1: # Current constraint on this being lte than about 0b, just to speed it up
+    #         break
+    #     cat3_level_1b = new_cat3_level_1b
+    #     cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
+    #
+    #     # Run main
+    #     profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+    #         main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+    #
+    #     if profit_became_worse: # Used to be profit_became_worse_twice
+    #         break
+    #
+    # # Set best 1b
+    # max_profit_index = np.argmax(profits['profit'])
+    # cat3_level_0b = profits['0b'][max_profit_index]
+    # cat3_level_1b = profits['1b'][max_profit_index]
+    # cat3_level_2b = profits['2b'][max_profit_index]
+    #
+    #
+    #
+    # profit_became_worse = False
+    # profit_became_worse_twice = False
+    # for new_cat3_level_2b in range(cat3_level_2b-1, 20):
+    #     if new_cat3_level_2b == cat3_level_2b:
+    #         continue
+    #     if new_cat3_level_2b > cat3_level_1b + 1: # Current constraint on this being lte than about 0b, just to speed it up
+    #         break
+    #     cat3_level_2b = new_cat3_level_2b
+    #
+    #     # Run main
+    #     profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit = \
+    #         main(cat3_level_0b, cat3_level_1b, cat3_level_2b, max_profit, last_profit, profits, profit_became_worse, profit_became_worse_twice)
+    #
+    #     if profit_became_worse: # Used to be profit_became_worse_twice
+    #         break
 
     print(profits)
     df = pd.DataFrame(profits)
