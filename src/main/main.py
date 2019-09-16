@@ -660,9 +660,9 @@ for rank1 in range(14,1,-1):
             if rank1 >= rank2 and rank2 >= rank3:
                 flops.append([rank1, rank2, rank3])
 
-flops = flops[267:]
+flops = flops[406:]
 
-i = 263
+i = 398
 for flop in flops:
     max_profit = -100
     last_profit = -100
