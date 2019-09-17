@@ -1,10 +1,12 @@
 import math
 import itertools
 import functools
+import subprocess
 import numpy as np
 import pandas as pd
 from copy import deepcopy
 from collections import defaultdict
+
 
 # RFI
 lj_rfi = "55+,A2s+,K9s+,Q9s+,J9s+,T9s,98s,87s,76s,AJo+,KQo+"
@@ -1379,38 +1381,38 @@ for flop in flops:
 
 
           # #### 3) Equilab control mouse and save equity
-        import pyautogui as g
+        # import pyautogui as g
         from time import sleep
-        import pyperclip as clip
-        g.FAILSAFE = True
-        g.PAUSE = 0.0
+        # import pyperclip as clip
+        # g.FAILSAFE = True
+        # g.PAUSE = 0.0
         # g.position()
 
-        def c():
-            g.click(button='left')
-
-        def c2():
-            g.click(clicks=2)
-
-        def rc():
-            g.click(button='right')
-
-        def paste():
-            g.keyDown('ctrl')
-            g.keyDown('v')
-            g.keyUp('v')
-            g.keyUp('ctrl')
-
-        def copy_text():
-            g.keyDown('ctrl')
-            g.keyDown('c')
-            g.keyUp('c')
-            g.keyUp('ctrl')
+        # def c():
+        #     g.click(button='left')
+        #
+        # def c2():
+        #     g.click(clicks=2)
+        #
+        # def rc():
+        #     g.click(button='right')
+        #
+        # def paste():
+        #     g.keyDown('ctrl')
+        #     g.keyDown('v')
+        #     g.keyUp('v')
+        #     g.keyUp('ctrl')
+        #
+        # def copy_text():
+        #     g.keyDown('ctrl')
+        #     g.keyDown('c')
+        #     g.keyUp('c')
+        #     g.keyUp('ctrl')
 
 
         # Click on screen
-        g.moveTo(791, 398)
-        c()
+        # g.moveTo(791, 398)
+        # c()
 
 
 
@@ -1420,6 +1422,7 @@ for flop in flops:
         equity_cbbc = 0.50
         equity_bc = 0.50
         equity_bbc = 0.50
+        python_bin = "/Users/petermyers/Documents/pbots_calc-master/venv/bin/python"
         if my_position_ip:
             pass
         else:
@@ -1431,57 +1434,64 @@ for flop in flops:
                 if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
                     continue
 
-                sleep_length = 0.06
-                is_success = True
-                for _ in range(100):
-                    # Clear all
-                    g.moveTo(959, 396)
-                    c()
 
-                    # Flop
-                    clip.copy(final_flop_string)
-                    sleep(sleep_length*5)
-                    g.moveTo(784, 320)
-                    c()
-                    paste()
-                    sleep(sleep_length*5)
 
-                    # Hand range 1
-                    clip.copy(my_hands_string)
-                    sleep(sleep_length)
-                    g.moveTo(972, 156)
-                    c()
-                    paste()
-                    sleep(sleep_length*5)
+                # path to the script that must run under the virtualenv
+                script_file = "/Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(mine_temp, opponents_temp, final_flop_string)
 
-                    # Hand range 2 (Hopefully it doesn't copy the first hand twice)
-                    clip.copy("ABC")
-                    clip.copy(opponents_hands_string)
-                    sleep(sleep_length)
-                    g.moveTo(999, 179)
-                    c()
-                    paste()
-                    sleep(sleep_length)
+                result = subprocess.check_output([python_bin, script_file])
 
-                    # Evaluate button
-                    g.moveTo(1377, 394)
-                    c()
-
-                    # # Stop monteo carlo (Decided to use Enumerate all)
-                    # sleep(sleep_length)
-                    # g.moveTo(1206, 398)
-                    # c()
-
-                    # Copy equity
-                    sleep(sleep_length*3.3)
-                    g.moveTo(1396, 158)
-                    c2()
-                    copy_text()
-                    sleep(sleep_length/3)
-
-                    # Save raw equity
-                    raw_equity_string = clip.paste()
-
+                # sleep_length = 0.06
+                # is_success = True
+                # for _ in range(100):
+                #     # Clear all
+                #     g.moveTo(959, 396)
+                #     c()
+                #
+                #     # Flop
+                #     clip.copy(final_flop_string)
+                #     sleep(sleep_length*5)
+                #     g.moveTo(784, 320)
+                #     c()
+                #     paste()
+                #     sleep(sleep_length*5)
+                #
+                #     # Hand range 1
+                #     clip.copy(my_hands_string)
+                #     sleep(sleep_length)
+                #     g.moveTo(972, 156)
+                #     c()
+                #     paste()
+                #     sleep(sleep_length*5)
+                #
+                #     # Hand range 2 (Hopefully it doesn't copy the first hand twice)
+                #     clip.copy("ABC")
+                #     clip.copy(opponents_hands_string)
+                #     sleep(sleep_length)
+                #     g.moveTo(999, 179)
+                #     c()
+                #     paste()
+                #     sleep(sleep_length)
+                #
+                #     # Evaluate button
+                #     g.moveTo(1377, 394)
+                #     c()
+                #
+                #     # # Stop monteo carlo (Decided to use Enumerate all)
+                #     # sleep(sleep_length)
+                #     # g.moveTo(1206, 398)
+                #     # c()
+                #
+                #     # Copy equity
+                #     sleep(sleep_length*3.3)
+                #     g.moveTo(1396, 158)
+                #     c2()
+                #     copy_text()
+                #     sleep(sleep_length/3)
+                #
+                #     # Save raw equity
+                #     raw_equity_string = clip.paste()
+                #
                     # Possibly repeat loop
                     try:
                         raw_equity = float(raw_equity_string.replace("%",""))/100

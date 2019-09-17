@@ -1,5 +1,10 @@
 perfect_flop_poker
 ==============================
+follow steps of pbots_calc to set it up (carefully)
+Use Python 2
+
+source /Users/petermyers/Documents/pbots_calc-master/venv/bin/activate
+python src/main/main_py2.py
 
 Preflop is solved.  Now I'm solving flop.
 
