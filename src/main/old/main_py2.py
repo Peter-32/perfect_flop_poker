@@ -1,3 +1,4 @@
+import ast
 import math
 import itertools
 import functools
@@ -1250,35 +1251,35 @@ for flop in flops:
             # Cat3 pct_makeup
             my_cat3_pct_cc = 0
             my_cat3_pct_cbc = 0
-            my_cat3_pct_cbbc = 0 if combos_cbb == 0 else count_hand_combos(get_raise_hands(my_hands_c, [[],[],[]], my_hands_cat3_1b)) / combos_cbb
-            my_cat3_pct_bc = 0 if combos_b == 0 else count_hand_combos(my_hands_cat3_0b) / combos_b
-            my_cat3_pct_bbc = 0 if combos_bbc == 0 else count_hand_combos(get_raise_hands(my_hands_b, [[],[],[]], my_hands_cat3_2b)) / combos_bbc
+            my_cat3_pct_cbbc = 0 if combos_cbb == 0 else count_hand_combos(get_raise_hands(my_hands_c, [[],[],[]], my_hands_cat3_1b)) / float(combos_cbb)
+            my_cat3_pct_bc = 0 if combos_b == 0 else count_hand_combos(my_hands_cat3_0b) / float(combos_b)
+            my_cat3_pct_bbc = 0 if combos_bbc == 0 else count_hand_combos(get_raise_hands(my_hands_b, [[],[],[]], my_hands_cat3_2b)) / float(combos_bbc)
 
             opponents_cat3_pct_cc = 0
-            opponents_cat3_pct_cbc = 0 if combos_cb == 0 else count_hand_combos(opponents_hands_cat3_0b) / combos_cb
-            opponents_cat3_pct_cbbc = 0 if combos_cbbc == 0 else count_hand_combos(get_raise_hands(opponents_hands_cb, [[],[],[]], opponents_hands_cat3_2b)) / combos_cbbc
+            opponents_cat3_pct_cbc = 0 if combos_cb == 0 else count_hand_combos(opponents_hands_cat3_0b) / float(combos_cb)
+            opponents_cat3_pct_cbbc = 0 if combos_cbbc == 0 else count_hand_combos(get_raise_hands(opponents_hands_cb, [[],[],[]], opponents_hands_cat3_2b)) / float(combos_cbbc)
             opponents_cat3_pct_bc = 0
-            opponents_cat3_pct_bbc = 0 if combos_bb == 0 else count_hand_combos(opponents_hands_cat3_1b) / combos_bb
+            opponents_cat3_pct_bbc = 0 if combos_bb == 0 else count_hand_combos(opponents_hands_cat3_1b) / float(combos_bb)
 
 
         #### 1) the % chance of each bet sequence
         if my_position_ip:
             pass
         else:
-            chance_c = combos_c/(combos_c + combos_b)
-            chance_b = combos_b/(combos_c + combos_b)
-            chance_cc = chance_c*(combos_cc/(combos_cc + combos_cb))
-            chance_cb = chance_c*(combos_cb/(combos_cc + combos_cb))
-            chance_bf = chance_b*(combos_bf/(combos_bf + combos_bc + combos_bb))
-            chance_bc = chance_b*(combos_bc/(combos_bf + combos_bc + combos_bb))
-            chance_bb = chance_b*(combos_bb/(combos_bf + combos_bc + combos_bb))
-            chance_cbf = chance_cb*(combos_cbf/(combos_cbf + combos_cbc + combos_cbb))
-            chance_cbc = chance_cb*(combos_cbc/(combos_cbf + combos_cbc + combos_cbb))
-            chance_cbb = chance_cb*(combos_cbb/(combos_cbf + combos_cbc + combos_cbb))
-            chance_bbf = chance_bb*(combos_bbf/(combos_bbf + combos_bbc))
-            chance_bbc = chance_bb*(combos_bbc/(combos_bbf + combos_bbc))
-            chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
-            chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
+            chance_c = float(combos_c)/(combos_c + combos_b)
+            chance_b = float(combos_b)/(combos_c + combos_b)
+            chance_cc = chance_c*(float(combos_cc)/(combos_cc + combos_cb))
+            chance_cb = chance_c*(float(combos_cb)/(combos_cc + combos_cb))
+            chance_bf = chance_b*(float(combos_bf)/(combos_bf + combos_bc + combos_bb))
+            chance_bc = chance_b*(float(combos_bc)/(combos_bf + combos_bc + combos_bb))
+            chance_bb = chance_b*(float(combos_bb)/(combos_bf + combos_bc + combos_bb))
+            chance_cbf = chance_cb*(float(combos_cbf)/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbc = chance_cb*(float(combos_cbc)/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbb = chance_cb*(float(combos_cbb)/(combos_cbf + combos_cbc + combos_cbb))
+            chance_bbf = chance_bb*(float(combos_bbf)/(combos_bbf + combos_bbc))
+            chance_bbc = chance_bb*(float(combos_bbc)/(combos_bbf + combos_bbc))
+            chance_cbbf = chance_cbb*(float(combos_cbbf)/(combos_cbbf + combos_cbbc))
+            chance_cbbc = chance_cbb*(float(combos_cbbc)/(combos_cbbf + combos_cbbc))
 
         # print("Test that all add to 1.0")
         chance_c+chance_b, chance_cc+chance_cb+chance_bf+chance_bc+chance_bb, \
@@ -1436,10 +1437,14 @@ for flop in flops:
 
 
 
-                # path to the script that must run under the virtualenv
-                script_file = "/Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(mine_temp, opponents_temp, final_flop_string)
 
-                result = subprocess.check_output([python_bin, script_file])
+                raw_equity = ast.literal_eval(subprocess.check_output(["/Users/petermyers/Documents/pbots_calc-master/python/calculator.sh", "{}:{}".format(my_hands_string, opponents_hands_string), final_flop_string]))[0][1]
+                print raw_equity
+                # try:
+                #     raw_equity = ast.literal_eval(subprocess.check_output(["/Users/petermyers/Documents/pbots_calc-master/python/calculator.sh", "{}:{}".format(my_hands_string, opponents_hands_string), final_flop_string]))[0][1]
+                # except:
+                #     raw_equity = 0.50
+                #     print("Failed to run shell command")
 
                 # sleep_length = 0.06
                 # is_success = True
@@ -1493,34 +1498,34 @@ for flop in flops:
                 #     raw_equity_string = clip.paste()
                 #
                     # Possibly repeat loop
-                    try:
-                        raw_equity = float(raw_equity_string.replace("%",""))/100
-                        is_success = True
-                    except:
-                        is_success = False
-                        sleep_length = sleep_length*1.1
+                    # try:
+                    #     raw_equity = float(raw_equity_string.replace("%",""))/100
+                    #     is_success = True
+                    # except:
+                    #     is_success = False
+                    #     sleep_length = sleep_length*1.1
 
-                    if is_success:
-                        break
+                # if is_success:
+                #     break
 
                 # Adjust for position and implied odds
                 # (assuming cat3 is only one with implied odds; not entirely true but fine)
                 # 3 represents +/- 3%, 0.5 represents maximum difference expected
                 # - 0.03 represents unrealized equity from being out of position
                 if action == "cc":
-                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100.0
                     equity_cc = raw_equity - 0.03 + implied_odds_adjustment
                 elif action == "cbc":
-                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100.0
                     equity_cbc = raw_equity - 0.03 + implied_odds_adjustment
                 elif action == "cbbc":
-                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100.0
                     equity_cbbc = raw_equity - 0.03 + implied_odds_adjustment
                 elif action == "bc":
-                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100.0
                     equity_bc = raw_equity - 0.03 + implied_odds_adjustment
                 else:
-                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100.0
                     equity_bbc = raw_equity - 0.03 + implied_odds_adjustment
 
 
@@ -1566,7 +1571,7 @@ for flop in flops:
                      (winnings_bbf-my_investment_bbf)*chance_bbf + \
                      (winnings_bbc-my_investment_bbc)*chance_bbc
 
-        print("Profit: %.3f" % (profit))
+        print "Profit: %.3f" % (profit)
 
 
         if profit > max_profit:
@@ -1686,9 +1691,9 @@ for flop in flops:
     #     if profit_became_worse: # Used to be profit_became_worse_twice
     #         break
 
-    print(profits)
+    print profits
     df = pd.DataFrame(profits)
-    print(df)
+    print df
     df.to_csv("../../reports/results/{}_{}.csv".format(range_name, str(i).zfill(3)))
     i += 1
 
