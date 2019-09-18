@@ -661,12 +661,12 @@ def get_opponent_situation(bets):
 
 #####
 
-flops = []
+all_flops = []
 for rank1 in range(14,1,-1):
     for rank2 in range(14,1,-1):
         for rank3 in range(14,1,-1):
             if rank1 >= rank2 and rank2 >= rank3:
-                flops.append([rank1, rank2, rank3])
+                all_flops.append([rank1, rank2, rank3])
 
 # # Start from a spot
 # flops = flops[406:]
@@ -687,7 +687,9 @@ print(len(range_names), len(my_ranges), len(opponents_ranges), len(my_position_i
 input = sys.argv[1]
 if input == "1":
     board_type = "two-tone"
-    start_index = 7
+    start_index = 12
+    i = 137
+    flops = all_flops[139:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -697,7 +699,9 @@ if input == "1":
     my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
-    start_index = 2
+    start_index = 7
+    i = 438
+    flops = all_flops[438:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -705,9 +709,12 @@ elif input == "2":
     opponent_pfrs = opponent_pfrs[start_index:]
     pot_sizes = pot_sizes[start_index:]
     my_investments = my_investments[start_index:]
+
 elif input == "3":
     board_type = "monotone"
-    start_index = 11
+    start_index = 18
+    i = 204
+    flops = all_flops[302:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -715,9 +722,10 @@ elif input == "3":
     opponent_pfrs = opponent_pfrs[start_index:]
     pot_sizes = pot_sizes[start_index:]
     my_investments = my_investments[start_index:]
+
 print(input, board_type)
 
-
+is_first_run = True
 # ***
 for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_size, my_investment in zip(range_names, my_ranges, opponents_ranges, my_position_ips, opponent_pfrs, pot_sizes, my_investments):
     # Focus on one range for now, later iterate through all of them
@@ -725,7 +733,12 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
     my_hands = range_to_hands(my_range)
     opponents_hands = range_to_hands(opponents_range)
 
-    i = 0
+    if is_first_run == False:
+        i = 0
+        flops = all_flops
+    else:
+        is_first_run = False
+
     try:
         os.mkdir("../../reports/{}".format(range_name))
     except:
