@@ -3,8 +3,15 @@ perfect_flop_poker
 follow steps of pbots_calc to set it up (carefully)
 Use Python 3
 
+py_commons
 cd src/main
 python main.py
+
+
+Concurrent:
+python main.py 1 &
+python main.py 2 &
+python main.py 3 &
 
 Preflop is solved.  Now I'm solving flop.
 
