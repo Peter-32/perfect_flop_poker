@@ -1233,7 +1233,56 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
             # Determine:
             #### 0) Hands in each situation
             if my_position_ip:
-                pass
+                # Hands
+                opponents_hands_c = get_check_hands(opponents_hands_with_combos, opponents_hands_cat1_0b, opponents_hands_cat3_0b)
+                opponents_hands_b = combine_hands(opponents_hands_cat1_0b, opponents_hands_cat3_0b)
+                my_hands_cc = get_check_hands(my_hands_with_combos, my_hands_cat1_0b, my_hands_cat3_0b)
+                my_hands_cb = combine_hands(my_hands_cat1_0b, my_hands_cat3_0b)
+                my_hands_bf = get_fold_hands(my_hands_with_combos, my_hands_cat1_1b, my_hands_cat2_1b, my_hands_cat3_1b)
+                my_hands_bc = my_hands_cat2_1b
+                my_hands_bb = combine_hands(my_hands_cat1_1b, my_hands_cat3_1b)
+                opponents_hands_cbf = get_fold_hands(opponents_hands_c, opponents_hands_cat1_1b, opponents_hands_cat2_1b, opponents_hands_cat3_1b)
+                opponents_hands_cbc = get_call_hands(opponents_hands_c, opponents_hands_cat2_1b)
+                opponents_hands_cbb = get_raise_hands(opponents_hands_c, opponents_hands_cat1_1b, opponents_hands_cat3_1b)
+                opponents_hands_bbf = get_fold_hands(opponents_hands_b, opponents_hands_cat1_2b, opponents_hands_cat2_2b, opponents_hands_cat3_2b)
+                opponents_hands_bbc = get_call_hands(opponents_hands_b, combine_hands(opponents_hands_cat1_2b, combine_hands(opponents_hands_cat2_2b, opponents_hands_cat3_2b))) # cat1/3 are calls
+                my_hands_cbbf = get_fold_hands(my_hands_cb, my_hands_cat1_2b, my_hands_cat2_2b, my_hands_cat3_2b)
+                my_hands_cbbc = get_call_hands(my_hands_cb, combine_hands(my_hands_cat1_2b, combine_hands(my_hands_cat2_2b, my_hands_cat3_2b))) # cat1/3 are calls
+
+                # Combos
+                combos_c = count_hand_combos(opponents_hands_c)
+                combos_b = count_hand_combos(opponents_hands_b)
+                combos_cc = count_hand_combos(my_hands_cc)
+                combos_cb = count_hand_combos(my_hands_cb)
+                combos_bf = count_hand_combos(my_hands_bf)
+                combos_bc = count_hand_combos(my_hands_bc)
+                combos_bb = count_hand_combos(my_hands_bb)
+                combos_cbf = count_hand_combos(opponents_hands_cbf)
+                combos_cbc = count_hand_combos(opponents_hands_cbc)
+                combos_cbb = count_hand_combos(opponents_hands_cbb)
+                combos_bbf = count_hand_combos(opponents_hands_bbf)
+                combos_bbc = count_hand_combos(opponents_hands_bbc)
+                combos_cbbf = count_hand_combos(my_hands_cbbf)
+                combos_cbbc = count_hand_combos(my_hands_cbbc)
+
+                # Cat3 pct_makeup
+                opponents_cat3_pct_cc = 0
+                opponents_cat3_pct_cbc = 0
+                opponents_cat3_pct_cbbc = 0 if combos_cbb == 0 else count_hand_combos(get_raise_hands(opponents_hands_c, [[],[],[]], opponents_hands_cat3_1b)) / combos_cbb
+                opponents_cat3_pct_bc = 0 if combos_b == 0 else count_hand_combos(opponents_hands_cat3_0b) / combos_b
+                opponents_cat3_pct_bbc = 0 if combos_bbc == 0 else count_hand_combos(get_raise_hands(opponents_hands_b, [[],[],[]], opponents_hands_cat3_2b)) / combos_bbc
+
+                my_cat3_pct_cc = 0
+                my_cat3_pct_cbc = 0 if combos_cb == 0 else count_hand_combos(my_hands_cat3_0b) / combos_cb
+                my_cat3_pct_cbbc = 0 if combos_cbbc == 0 else count_hand_combos(get_raise_hands(my_hands_cb, [[],[],[]], my_hands_cat3_2b)) / combos_cbbc
+                my_cat3_pct_bc = 0
+                my_cat3_pct_bbc = 0 if combos_bb == 0 else count_hand_combos(my_hands_cat3_1b) / combos_bb
+
+
+
+
+
+
             else:
                 # Hands
                 my_hands_c = get_check_hands(my_hands_with_combos, my_hands_cat1_0b, my_hands_cat3_0b)
@@ -1247,9 +1296,9 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
                 my_hands_cbc = get_call_hands(my_hands_c, my_hands_cat2_1b)
                 my_hands_cbb = get_raise_hands(my_hands_c, my_hands_cat1_1b, my_hands_cat3_1b)
                 my_hands_bbf = get_fold_hands(my_hands_b, my_hands_cat1_2b, my_hands_cat2_2b, my_hands_cat3_2b)
-                my_hands_bbc = get_call_hands(my_hands_b, combine_hands(my_hands_cat2_2b, my_hands_cat3_2b)) # cat3 is a call
+                my_hands_bbc = get_call_hands(my_hands_b, combine_hands(my_hands_cat1_2b, combine_hands(my_hands_cat2_2b, my_hands_cat3_2b))) # cat1/3 are calls
                 opponents_hands_cbbf = get_fold_hands(opponents_hands_cb, opponents_hands_cat1_2b, opponents_hands_cat2_2b, opponents_hands_cat3_2b)
-                opponents_hands_cbbc = get_call_hands(opponents_hands_cb, combine_hands(opponents_hands_cat2_2b, opponents_hands_cat3_2b)) # cat3 is a call
+                opponents_hands_cbbc = get_call_hands(opponents_hands_cb, combine_hands(opponents_hands_cat1_2b, combine_hands(opponents_hands_cat2_2b, opponents_hands_cat3_2b))) # cat1/3 are calls
 
                 # Combos
                 combos_c = count_hand_combos(my_hands_c)
@@ -1282,23 +1331,21 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
 
             #### 1) the % chance of each bet sequence
-            if my_position_ip:
-                pass
-            else:
-                chance_c = combos_c/(combos_c + combos_b)
-                chance_b = combos_b/(combos_c + combos_b)
-                chance_cc = chance_c*(combos_cc/(combos_cc + combos_cb))
-                chance_cb = chance_c*(combos_cb/(combos_cc + combos_cb))
-                chance_bf = chance_b*(combos_bf/(combos_bf + combos_bc + combos_bb))
-                chance_bc = chance_b*(combos_bc/(combos_bf + combos_bc + combos_bb))
-                chance_bb = chance_b*(combos_bb/(combos_bf + combos_bc + combos_bb))
-                chance_cbf = chance_cb*(combos_cbf/(combos_cbf + combos_cbc + combos_cbb))
-                chance_cbc = chance_cb*(combos_cbc/(combos_cbf + combos_cbc + combos_cbb))
-                chance_cbb = chance_cb*(combos_cbb/(combos_cbf + combos_cbc + combos_cbb))
-                chance_bbf = chance_bb*(combos_bbf/(combos_bbf + combos_bbc))
-                chance_bbc = chance_bb*(combos_bbc/(combos_bbf + combos_bbc))
-                chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
-                chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
+
+            chance_c = combos_c/(combos_c + combos_b)
+            chance_b = combos_b/(combos_c + combos_b)
+            chance_cc = chance_c*(combos_cc/(combos_cc + combos_cb))
+            chance_cb = chance_c*(combos_cb/(combos_cc + combos_cb))
+            chance_bf = chance_b*(combos_bf/(combos_bf + combos_bc + combos_bb))
+            chance_bc = chance_b*(combos_bc/(combos_bf + combos_bc + combos_bb))
+            chance_bb = chance_b*(combos_bb/(combos_bf + combos_bc + combos_bb))
+            chance_cbf = chance_cb*(combos_cbf/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbc = chance_cb*(combos_cbc/(combos_cbf + combos_cbc + combos_cbb))
+            chance_cbb = chance_cb*(combos_cbb/(combos_cbf + combos_cbc + combos_cbb))
+            chance_bbf = chance_bb*(combos_bbf/(combos_bbf + combos_bbc))
+            chance_bbc = chance_bb*(combos_bbc/(combos_bbf + combos_bbc))
+            chance_cbbf = chance_cbb*(combos_cbbf/(combos_cbbf + combos_cbbc))
+            chance_cbbc = chance_cbb*(combos_cbbc/(combos_cbbf + combos_cbbc))
 
             # print("Test that all add to 1.0")
             chance_c+chance_b, chance_cc+chance_cb+chance_bf+chance_bc+chance_bb, \
@@ -1363,7 +1410,36 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
             #### 2) the ranges that go against each other (or who won pot)
             if my_position_ip:
-                pass
+                # Hands version
+                final_opponents_hands_cc = opponents_hands_c
+                final_my_hands_cc = my_hands_cc
+                final_opponents_hands_cbc = opponents_hands_cbc
+                final_my_hands_cbc = my_hands_cb
+                final_opponents_hands_cbbc = opponents_hands_cbb
+                final_my_hands_cbbc = my_hands_cbbc
+                final_opponents_hands_bc = opponents_hands_b
+                final_my_hands_bc = my_hands_bc
+                final_opponents_hands_bbc = opponents_hands_bbc
+                final_my_hands_bbc = my_hands_bb
+
+                # String version for Equilab
+                final_opponents_hands_cc_string = convert_hands_to_range(opponents_hands_c, flop)
+                final_my_hands_cc_string = convert_hands_to_range(my_hands_cc, flop)
+                final_opponents_hands_cbc_string = convert_hands_to_range(opponents_hands_cbc, flop)
+                final_my_hands_cbc_string = convert_hands_to_range(my_hands_cb, flop)
+                final_opponents_hands_cbbc_string = convert_hands_to_range(opponents_hands_cbb, flop)
+                final_my_hands_cbbc_string = convert_hands_to_range(my_hands_cbbc, flop)
+                final_opponents_hands_bc_string = convert_hands_to_range(opponents_hands_b, flop)
+                final_my_hands_bc_string = convert_hands_to_range(my_hands_bc, flop)
+                final_opponents_hands_bbc_string = convert_hands_to_range(opponents_hands_bbc, flop)
+                final_my_hands_bbc_string = convert_hands_to_range(my_hands_bb, flop)
+
+
+
+
+
+
+
             else:
                 # Hands version
                 final_my_hands_cc = my_hands_c
@@ -1389,52 +1465,19 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
                 final_my_hands_bbc_string = convert_hands_to_range(my_hands_bbc, flop)
                 final_opponents_hands_bbc_string = convert_hands_to_range(opponents_hands_bb, flop)
 
-                # Flop as string (won't get a card twice due to exceptions thrown far above)
-                if board_type == "rainbow":
-                    final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "c"
-                elif board_type == "two-tone":
-                    final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "s"
-                elif board_type == "monotone":
-                    final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "s" + m2[flop[2]] + "s"
+            # Flop as string (won't get a card twice due to exceptions thrown far above)
+            if board_type == "rainbow":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "c"
+            elif board_type == "two-tone":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "h" + m2[flop[2]] + "s"
+            elif board_type == "monotone":
+                final_flop_string = m2[flop[0]] + "s" + m2[flop[1]] + "s" + m2[flop[2]] + "s"
 
 
 
 
               # #### 3) Equilab control mouse and save equity
-            # import pyautogui as g
             from time import sleep
-            # import pyperclip as clip
-            # g.FAILSAFE = True
-            # g.PAUSE = 0.0
-            # g.position()
-
-            # def c():
-            #     g.click(button='left')
-            #
-            # def c2():
-            #     g.click(clicks=2)
-            #
-            # def rc():
-            #     g.click(button='right')
-            #
-            # def paste():
-            #     g.keyDown('ctrl')
-            #     g.keyDown('v')
-            #     g.keyUp('v')
-            #     g.keyUp('ctrl')
-            #
-            # def copy_text():
-            #     g.keyDown('ctrl')
-            #     g.keyDown('c')
-            #     g.keyUp('c')
-            #     g.keyUp('ctrl')
-
-
-            # Click on screen
-            # g.moveTo(791, 398)
-            # c()
-
-
 
 
             equity_cc = 0.50
@@ -1443,106 +1486,46 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
             equity_bc = 0.50
             equity_bbc = 0.50
             python_bin = "/Users/petermyers/Documents/pbots_calc-master/venv/bin/python"
-            if my_position_ip:
-                pass
-            else:
-                actions = ["cc", "cbc", "cbbc", "bc", "bbc"]
-                mine_temp = [final_my_hands_cc_string, final_my_hands_cbc_string, final_my_hands_cbbc_string, final_my_hands_bc_string, final_my_hands_bbc_string]
-                opponents_temp = [final_opponents_hands_cc_string, final_opponents_hands_cbc_string, final_opponents_hands_cbbc_string, final_opponents_hands_bc_string, final_opponents_hands_bbc_string]
-                for action, my_hands_string, opponents_hands_string in zip(actions, mine_temp, opponents_temp):
-                    # If empty range, continue
-                    if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
-                        continue
+
+            actions = ["cc", "cbc", "cbbc", "bc", "bbc"]
+            mine_temp = [final_my_hands_cc_string, final_my_hands_cbc_string, final_my_hands_cbbc_string, final_my_hands_bc_string, final_my_hands_bbc_string]
+            opponents_temp = [final_opponents_hands_cc_string, final_opponents_hands_cbc_string, final_opponents_hands_cbbc_string, final_opponents_hands_bc_string, final_opponents_hands_bbc_string]
+
+
+            for action, my_hands_string, opponents_hands_string in zip(actions, mine_temp, opponents_temp):
+                # If empty range, continue
+                if len(my_hands_string) == 0 or len(opponents_hands_string) == 0:
+                    continue
 
 
 
-                    # Equity calculation
-                    command = "source /Users/petermyers/Documents/pbots_calc-master/venv/bin/activate; /Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(my_hands_string, opponents_hands_string, final_flop_string)
-                    process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
-                    raw_equity = ast.literal_eval(process.communicate()[0].strip().decode("utf-8"))[0][1]
+                # Equity calculation
+                command = "source /Users/petermyers/Documents/pbots_calc-master/venv/bin/activate; /Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(my_hands_string, opponents_hands_string, final_flop_string)
+                process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
+                raw_equity = ast.literal_eval(process.communicate()[0].strip().decode("utf-8"))[0][1]
 
 
-                    # sleep_length = 0.06
-                    # is_success = True
-                    # for _ in range(100):
-                    #     # Clear all
-                    #     g.moveTo(959, 396)
-                    #     c()
-                    #
-                    #     # Flop
-                    #     clip.copy(final_flop_string)
-                    #     sleep(sleep_length*5)
-                    #     g.moveTo(784, 320)
-                    #     c()
-                    #     paste()
-                    #     sleep(sleep_length*5)
-                    #
-                    #     # Hand range 1
-                    #     clip.copy(my_hands_string)
-                    #     sleep(sleep_length)
-                    #     g.moveTo(972, 156)
-                    #     c()
-                    #     paste()
-                    #     sleep(sleep_length*5)
-                    #
-                    #     # Hand range 2 (Hopefully it doesn't copy the first hand twice)
-                    #     clip.copy("ABC")
-                    #     clip.copy(opponents_hands_string)
-                    #     sleep(sleep_length)
-                    #     g.moveTo(999, 179)
-                    #     c()
-                    #     paste()
-                    #     sleep(sleep_length)
-                    #
-                    #     # Evaluate button
-                    #     g.moveTo(1377, 394)
-                    #     c()
-                    #
-                    #     # # Stop monteo carlo (Decided to use Enumerate all)
-                    #     # sleep(sleep_length)
-                    #     # g.moveTo(1206, 398)
-                    #     # c()
-                    #
-                    #     # Copy equity
-                    #     sleep(sleep_length*3.3)
-                    #     g.moveTo(1396, 158)
-                    #     c2()
-                    #     copy_text()
-                    #     sleep(sleep_length/3)
-                    #
-                    #     # Save raw equity
-                    #     raw_equity_string = clip.paste()
-                    #
-                        # Possibly repeat loop
-                    # try:
-                    #     raw_equity = float(raw_equity_string.replace("%",""))/100
-                    #     is_success = True
-                    # except:
-                    #     is_success = False
-                    #     sleep_length = sleep_length*1.1
-                    #
-                    # if is_success:
-                    #     break
 
-                    # Adjust for position and implied odds
-                    # (assuming cat3 is only one with implied odds; not entirely true but fine)
-                    # 3 represents +/- 3%, 0.5 represents maximum difference expected
-                    # - 0.03 represents unrealized equity from being out of position
-                    if action == "cc":
-                        implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100
-                        equity_cc = raw_equity - 0.03 + implied_odds_adjustment
-                    elif action == "cbc":
-                        implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100
-                        equity_cbc = raw_equity - 0.03 + implied_odds_adjustment
-                    elif action == "cbbc":
-                        implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100
-                        equity_cbbc = raw_equity - 0.03 + implied_odds_adjustment
-                    elif action == "bc":
-                        implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100
-                        equity_bc = raw_equity - 0.03 + implied_odds_adjustment
-                    else:
-                        implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100
-                        equity_bbc = raw_equity - 0.03 + implied_odds_adjustment
+                # Adjust for position and implied odds
+                # (assuming cat3 is only one with implied odds; not entirely true but fine)
+                # 3 represents +/- 3%, 0.5 represents maximum difference expected
+                # - 0.03 represents unrealized equity from being out of position
+                positional_adjustment = 0.03 if my_position_ip else -0.03
+                if action == "cc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cc - opponents_cat3_pct_cc)/0.5)*3))/100
+                    equity_cc = raw_equity + positional_adjustment + implied_odds_adjustment
+                elif action == "cbc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbc - opponents_cat3_pct_cbc)/0.5)*3))/100
+                    equity_cbc = raw_equity + positional_adjustment + implied_odds_adjustment
+                elif action == "cbbc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_cbbc - opponents_cat3_pct_cbbc)/0.5)*3))/100
+                    equity_cbbc = raw_equity + positional_adjustment + implied_odds_adjustment
+                elif action == "bc":
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bc - opponents_cat3_pct_bc)/0.5)*3))/100
+                    equity_bc = raw_equity + positional_adjustment + implied_odds_adjustment
+                else:
+                    implied_odds_adjustment = max(-3,min(3, ((my_cat3_pct_bbc - opponents_cat3_pct_bbc)/0.5)*3))/100
+                    equity_bbc = raw_equity + positional_adjustment + implied_odds_adjustment
 
 
 
@@ -1552,7 +1535,30 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
             #### 4) The pot size in each situation including fold situations
             if my_position_ip:
-                pass
+                winnings_cc = pot_size*equity_cc
+                winnings_cbf = pot_size + (pot_size*my_bet_size)
+                cbc_pot_size = (pot_size + (pot_size*my_bet_size)*2)
+                winnings_cbc = cbc_pot_size*equity_cbc
+                winnings_cbbf = 0
+                winnings_cbbc = (cbc_pot_size + (cbc_pot_size*opponents_bet_size)*2)*equity_cbbc
+                winnings_bf = 0
+                bc_pot_size = (pot_size + (pot_size*opponents_bet_size)*2)
+                winnings_bc = bc_pot_size*equity_bc
+                winnings_bbf = (bc_pot_size + (bc_pot_size*my_bet_size))
+                winnings_bbc = (bc_pot_size + (bc_pot_size*my_bet_size)*2)*equity_bbc
+
+                my_investment_cc = my_investment
+                my_investment_cbf = my_investment + (my_bet_size*pot_size)
+                my_investment_cbc = my_investment + (my_bet_size*pot_size)
+                my_investment_cbbf = my_investment + (my_bet_size*pot_size)
+                my_investment_cbbc = my_investment + (my_bet_size*pot_size) + (cbc_pot_size*opponents_bet_size)
+                my_investment_bf = my_investment
+                my_investment_bc = my_investment +  (pot_size*opponents_bet_size)
+                my_investment_bbf = my_investment + (pot_size*opponents_bet_size) + (bc_pot_size*my_bet_size)
+                my_investment_bbc = my_investment + (pot_size*opponents_bet_size) + (bc_pot_size*my_bet_size)
+
+
+
             else:
                 winnings_cc = pot_size*equity_cc
                 winnings_cbf = 0
@@ -1576,16 +1582,16 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
                 my_investment_bbf = my_investment + (pot_size*my_bet_size)
                 my_investment_bbc = my_investment + (pot_size*my_bet_size) + (bc_pot_size*opponents_bet_size)
 
-                # Final profit amount
-                profit = (winnings_cc-my_investment_cc)*chance_cc + \
-                         (winnings_cbf-my_investment_cbf)*chance_cbf + \
-                         (winnings_cbc-my_investment_cbc)*chance_cbc + \
-                         (winnings_cbbf-my_investment_cbbf)*chance_cbbf + \
-                         (winnings_cbbc-my_investment_cbbc)*chance_cbbc + \
-                         (winnings_bf-my_investment_bf)*chance_bf + \
-                         (winnings_bc-my_investment_bc)*chance_bc + \
-                         (winnings_bbf-my_investment_bbf)*chance_bbf + \
-                         (winnings_bbc-my_investment_bbc)*chance_bbc
+            # Final profit amount
+            profit = (winnings_cc-my_investment_cc)*chance_cc + \
+                     (winnings_cbf-my_investment_cbf)*chance_cbf + \
+                     (winnings_cbc-my_investment_cbc)*chance_cbc + \
+                     (winnings_cbbf-my_investment_cbbf)*chance_cbbf + \
+                     (winnings_cbbc-my_investment_cbbc)*chance_cbbc + \
+                     (winnings_bf-my_investment_bf)*chance_bf + \
+                     (winnings_bc-my_investment_bc)*chance_bc + \
+                     (winnings_bbf-my_investment_bbf)*chance_bbf + \
+                     (winnings_bbc-my_investment_bbc)*chance_bbc
 
             print("Profit: %.3f" % (profit))
 
@@ -1607,17 +1613,14 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
             return profit_became_worse_twice, profit_became_worse, profits, last_profit, max_profit
 
-            # pot_size = 6.5
-            # my_investment = 2.5
-            # opponents_bet_size = 0.60
-            # my_bet_size
+
+
 
 
 
 
 
         # ***
-        #  (outside a flop changing loop for now, but can add that later)
 
         # Initialize loop
         profit_became_worse = False
