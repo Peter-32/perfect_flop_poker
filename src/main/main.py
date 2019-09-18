@@ -317,24 +317,24 @@ def my_hands_cat3_level_x_and_above(x, my_hands_cat1, my_hands_cat2):
     result[2] = [(x,y) for (x,y) in result[2] if x not in cat1_unique_o and x not in cat2_unique_o]
 
     # Add cat2 hands
-    if x >= 12:
+    if x >= 11:
         result[1] += [(x,y) for (x,y) in my_hands_s_k8_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in my_hands_o_k8_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 13:
+    if x >= 12:
         result[1] += [(x,y) for (x,y) in my_hands_s_kj_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in my_hands_o_kj_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 14:
+    if x >= 13:
         result[0] += [(x,y) for (x,y) in my_hands_pp_below_bottom_pair if x not in cat1_unique_pp and x not in cat2_unique_pp]
-    if x >= 15:
+    if x >= 14:
         result[1] += [(x,y) for (x,y) in my_hands_s_kq_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in my_hands_o_kq_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 16:
+    if x >= 15:
         result[0] += [(x,y) for (x,y) in my_hands_pp_below_middle_pair if x not in cat1_unique_pp and x not in cat2_unique_pp]
     # Add cat4 hands
-    if x >= 11:
-        remaining_cat2_type_hands_pp = [x for (x,y) in my_hands_pp_below_bottom_pair] + [x for (x,y) in my_hands_pp_below_middle_pair] + [x for (x,y) in my_hands_pp_below_top_pair]
-        remaining_cat2_type_hands_s = [x for (x,y) in my_hands_s_k8_high] + [x for (x,y) in my_hands_s_kj_high] + [x for (x,y) in my_hands_s_kq_high] + [x for (x,y) in my_hands_s_aj_high] + [x for (x,y) in my_hands_s_bottom_pair] + [x for (x,y) in my_hands_s_middle_pair] + [x for (x,y) in my_hands_s_tp_bad_kicker]
-        remaining_cat2_type_hands_o = [x for (x,y) in my_hands_o_k8_high] + [x for (x,y) in my_hands_o_kj_high] + [x for (x,y) in my_hands_o_kq_high] + [x for (x,y) in my_hands_o_aj_high] + [x for (x,y) in my_hands_o_bottom_pair] + [x for (x,y) in my_hands_o_middle_pair] + [x for (x,y) in my_hands_o_tp_bad_kicker]
+    if x >= 16:
+        remaining_cat2_type_hands_pp = [x for (x,y) in my_hands_pp_below_top_pair]
+        remaining_cat2_type_hands_s = [x for (x,y) in my_hands_s_aj_high] + [x for (x,y) in my_hands_s_bottom_pair] + [x for (x,y) in my_hands_s_middle_pair] + [x for (x,y) in my_hands_s_tp_bad_kicker]
+        remaining_cat2_type_hands_o = [x for (x,y) in my_hands_o_aj_high] + [x for (x,y) in my_hands_o_bottom_pair] + [x for (x,y) in my_hands_o_middle_pair] + [x for (x,y) in my_hands_o_tp_bad_kicker]
         result[0] += [(x, 6) for x in my_hands[0] if x not in cat1_unique_pp and x not in cat2_unique_pp and x not in remaining_cat2_type_hands_pp]
         result[1] += [(x, 4) for x in my_hands[1] if x not in cat1_unique_s and x not in cat2_unique_s and x not in remaining_cat2_type_hands_s]
         result[2] += [(x, 12) for x in my_hands[2] if x not in cat1_unique_o and x not in cat2_unique_o and x not in remaining_cat2_type_hands_o]
@@ -516,7 +516,7 @@ def opponents_hands_cat3_level_x_and_above(x, opponents_hands_cat1, opponents_ha
         bdfd_result[0] += opponents_hands_pp_q_minus_bdfd
         bdfd_result[1] += opponents_hands_s_q_minus_bdfd
         bdfd_result[2] += opponents_hands_o_q_minus_bdfd
-    if x >= 9 and not skip_4_to_10_and_13_to_15:
+    if x >= 9:
         other_result[1] += opponents_hands_s_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards
         other_result[2] += opponents_hands_o_lowest_card_is_one_of_3_cards_within_4_values_and_two_overcards
     if x >= 10 and not skip_4_to_10_and_13_to_15:
@@ -567,21 +567,21 @@ def opponents_hands_cat3_level_x_and_above(x, opponents_hands_cat1, opponents_ha
     result[2] = [(x,y) for (x,y) in result[2] if x not in cat1_unique_o and x not in cat2_unique_o]
 
     # Add cat2 hands
-    if x >= 12:
+    if x >= 11 and not skip_4_to_10_and_13_to_15:
         result[1] += [(x,y) for (x,y) in opponents_hands_s_k8_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in opponents_hands_o_k8_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 13:
+    if x >= 12 and not skip_4_to_10_and_13_to_15:
         result[1] += [(x,y) for (x,y) in opponents_hands_s_kj_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in opponents_hands_o_kj_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 14 and not skip_4_to_10_and_13_to_15:
+    if x >= 13 and not skip_4_to_10_and_13_to_15:
         result[0] += [(x,y) for (x,y) in opponents_hands_pp_below_bottom_pair if x not in cat1_unique_pp and x not in cat2_unique_pp]
-    if x >= 15 and not skip_4_to_10_and_13_to_15:
+    if x >= 14 and not skip_4_to_10_and_13_to_15:
         result[1] += [(x,y) for (x,y) in opponents_hands_s_kq_high if x not in cat1_unique_s and x not in cat2_unique_s]
         result[2] += [(x,y) for (x,y) in opponents_hands_o_kq_high if x not in cat1_unique_o and x not in cat2_unique_o]
-    if x >= 16 and not skip_4_to_10_and_13_to_15:
+    if x >= 15 and not skip_4_to_10_and_13_to_15:
         result[0] += [(x,y) for (x,y) in opponents_hands_pp_below_middle_pair if x not in cat1_unique_pp and x not in cat2_unique_pp]
     # Add cat4 hands
-    if x >= 11:
+    if x >= 16:
         remaining_cat2_type_hands_pp = [x for (x,y) in opponents_hands_pp_below_bottom_pair] + [x for (x,y) in opponents_hands_pp_below_middle_pair] + [x for (x,y) in opponents_hands_pp_below_top_pair]
         remaining_cat2_type_hands_s = [x for (x,y) in opponents_hands_s_k8_high] + [x for (x,y) in opponents_hands_s_kj_high] + [x for (x,y) in opponents_hands_s_kq_high] + [x for (x,y) in opponents_hands_s_aj_high] + [x for (x,y) in opponents_hands_s_bottom_pair] + [x for (x,y) in opponents_hands_s_middle_pair] + [x for (x,y) in opponents_hands_s_tp_bad_kicker]
         remaining_cat2_type_hands_o = [x for (x,y) in opponents_hands_o_k8_high] + [x for (x,y) in opponents_hands_o_kj_high] + [x for (x,y) in opponents_hands_o_kq_high] + [x for (x,y) in opponents_hands_o_aj_high] + [x for (x,y) in opponents_hands_o_bottom_pair] + [x for (x,y) in opponents_hands_o_middle_pair] + [x for (x,y) in opponents_hands_o_tp_bad_kicker]
@@ -672,7 +672,7 @@ for rank1 in range(14,1,-1):
 # flops = flops[406:]
 
 
-range_names = ["LJ vs BB 3Bet", "LJ vs BB Call", "LJ vs HJ 3Bet", "LJ vs CO 3Bet", "LJ vs BN 3Bet", "LJ vs SB 3Bet", "LJ vs HJ Call", "LJ vs CO Call", "LJ vs BN Call", "LJ vs SB Call", "HJ vs BB 3Bet", "HJ vs BB Call", "HJ vs CO 3Bet", "HJ vs BN 3Bet", "HJ vs SB 3Bet", "HJ vs CO Call", "HJ vs BN Call", "HJ vs SB Call", "CO vs BB 3Bet", "CO vs BB Call", "CO vs BN 3Bet", "CO vs SB 3Bet", "CO vs BN Call", "CO vs SB Call", "BN vs BB 3Bet", "BN vs BB Call", "BN vs SB 3Bet", "SB vs BB 3Bet", "SB vs BB Call", "BB 3Bet vs LJ", "BB Call vs LJ", "HJ 3Bet vs LJ", "CO 3Bet vs LJ", "BN 3Bet vs LJ", "SB 3Bet vs LJ", "HJ Call vs LJ", "CO Call vs LJ", "BN Call vs LJ", "SB Call vs LJ", "BB 3Bet vs HJ", "BB Call vs HJ", "CO 3Bet vs HJ", "BN 3Bet vs HJ", "SB 3Bet vs HJ", "CO Call vs HJ", "BN Call vs HJ", "SB Call vs HJ", "BB 3Bet vs CO", "BB Call vs CO", "BN 3Bet vs CO", "SB 3Bet vs CO", "BN Call vs CO", "SB Call vs CO", "BB 3Bet vs BN", "BB Call vs BN", "SB 3Bet vs BN", "BB 3Bet vs SB", "BB Call vs SB"]
+range_names = ["00 LJ vs BB 3Bet", "01 LJ vs BB Call", "02 LJ vs HJ 3Bet", "03 LJ vs CO 3Bet", "04 LJ vs BN 3Bet", "05 LJ vs SB 3Bet", "06 LJ vs HJ Call", "07 LJ vs CO Call", "08 LJ vs BN Call", "09 LJ vs SB Call", "10 HJ vs BB 3Bet", "11 HJ vs BB Call", "12 HJ vs CO 3Bet", "13 HJ vs BN 3Bet", "14 HJ vs SB 3Bet", "15 HJ vs CO Call", "16 HJ vs BN Call", "17 HJ vs SB Call", "18 CO vs BB 3Bet", "19 CO vs BB Call", "20 CO vs BN 3Bet", "21 CO vs SB 3Bet", "22 CO vs BN Call", "23 CO vs SB Call", "24 BN vs BB 3Bet", "25 BN vs BB Call", "26 BN vs SB 3Bet", "27 SB vs BB 3Bet", "28 SB vs BB Call", "29 BB 3Bet vs LJ", "30 BB Call vs LJ", "31 HJ 3Bet vs LJ", "32 CO 3Bet vs LJ", "33 BN 3Bet vs LJ", "34 SB 3Bet vs LJ", "35 HJ Call vs LJ", "36 CO Call vs LJ", "37 BN Call vs LJ", "38 SB Call vs LJ", "39 BB 3Bet vs HJ", "40 BB Call vs HJ", "41 CO 3Bet vs HJ", "42 BN 3Bet vs HJ", "43 SB 3Bet vs HJ", "44 CO Call vs HJ", "45 BN Call vs HJ", "46 SB Call vs HJ", "47 BB 3Bet vs CO", "48 BB Call vs CO", "49 BN 3Bet vs CO", "50 SB 3Bet vs CO", "51 BN Call vs CO", "52 SB Call vs CO", "53 BB 3Bet vs BN", "54 BB Call vs BN", "55 SB 3Bet vs BN", "56 BB 3Bet vs SB", "57 BB Call vs SB",]
 my_ranges = [RFIvs3B_lj_vs_blinds_call, lj_rfi, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_bn_call, RFIvs3B_lj_vs_blinds_call, lj_rfi, lj_rfi, lj_rfi, lj_rfi, RFIvs3B_hj_vs_ahead_call, hj_rfi, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, hj_rfi, hj_rfi, hj_rfi, RFIvs3B_co_vs_blinds_call, co_rfi, RFIvs3B_co_vs_bn_call, RFIvs3B_co_vs_blinds_call, co_rfi, co_rfi, RFIvs3B_bnsb_vs_ahead_call, bn_rfi, RFIvs3B_bnsb_vs_ahead_call, RFIvs3B_bnsb_vs_ahead_call, sb_rfi, vsRFI_bb_vs_lj__raise, vsRFI_bb_vs_lj__call, vsRFI_hj_vs_lj__raise, vsRFI_co_vs_lj__raise, vsRFI_bn_vs_lj__raise, vsRFI_sb_vs_lj__raise, vsRFI_hj_vs_lj__call, vsRFI_co_vs_lj__call, vsRFI_bn_vs_lj__call, vsRFI_sb_vs_lj__call, vsRFI_bb_vs_hj__raise, vsRFI_bb_vs_hj__call, vsRFI_co_vs_hj__raise, vsRFI_bn_vs_hj__raise, vsRFI_sb_vs_hj__raise, vsRFI_co_vs_hj__call, vsRFI_bn_vs_hj__call, vsRFI_sb_vs_hj__call, vsRFI_bb_vs_co__raise, vsRFI_bb_vs_co__call, vsRFI_bn_vs_co__raise, vsRFI_sb_vs_co__raise, vsRFI_bn_vs_co__call, vsRFI_sb_vs_co__call, vsRFI_bb_vs_bn__raise, vsRFI_bb_vs_bn__call, vsRFI_sb_vs_bn__raise, vsRFI_bb_vs_sb__raise, vsRFI_bb_vs_sb__call]
 opponents_ranges = [vsRFI_bb_vs_lj__raise, vsRFI_bb_vs_lj__call, vsRFI_hj_vs_lj__raise, vsRFI_co_vs_lj__raise, vsRFI_bn_vs_lj__raise, vsRFI_sb_vs_lj__raise, vsRFI_hj_vs_lj__call, vsRFI_co_vs_lj__call, vsRFI_bn_vs_lj__call, vsRFI_sb_vs_lj__call, vsRFI_bb_vs_hj__raise, vsRFI_bb_vs_hj__call, vsRFI_co_vs_hj__raise, vsRFI_bn_vs_hj__raise, vsRFI_sb_vs_hj__raise, vsRFI_co_vs_hj__call, vsRFI_bn_vs_hj__call, vsRFI_sb_vs_hj__call, vsRFI_bb_vs_co__raise, vsRFI_bb_vs_co__call, vsRFI_bn_vs_co__raise, vsRFI_sb_vs_co__raise, vsRFI_bn_vs_co__call, vsRFI_sb_vs_co__call, vsRFI_bb_vs_bn__raise, vsRFI_bb_vs_bn__call, vsRFI_sb_vs_bn__raise, vsRFI_bb_vs_sb__raise, vsRFI_bb_vs_sb__call, RFIvs3B_lj_vs_blinds_call, lj_rfi, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_bn_call, RFIvs3B_lj_vs_blinds_call, lj_rfi, lj_rfi, lj_rfi, lj_rfi, RFIvs3B_hj_vs_ahead_call, hj_rfi, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, hj_rfi, hj_rfi, hj_rfi, RFIvs3B_co_vs_blinds_call, co_rfi, RFIvs3B_co_vs_bn_call, RFIvs3B_co_vs_blinds_call, co_rfi, co_rfi, RFIvs3B_bnsb_vs_ahead_call, bn_rfi, RFIvs3B_bnsb_vs_ahead_call, RFIvs3B_bnsb_vs_ahead_call, sb_rfi]
 my_position_ips = [True, True, False, False, False, True, False, False, False, True, True, True, False, False, True, False, False, True, True, True, False, True, False, True, True, True, True, False, False, False, False, True, True, True, False, True, True, True, False, False, False, True, True, False, True, True, False, False, False, True, False, True, False, False, False, False, True, True]
@@ -681,23 +681,40 @@ pot_sizes = [18.5, 5.5, 19.5, 19.5, 19.5, 19, 6.5, 6.5, 6.5, 6, 18.5, 5.5, 19.5,
 my_investments = [9, 2.5, 9, 9, 9, 9, 2.5, 2.5, 2.5, 2.5, 9, 2.5, 9, 9, 9, 2.5, 2.5, 2.5, 9, 2.5, 9, 9, 2.5, 2.5, 9, 2.5, 9, 8.5, 2.5, 8, 1.5, 9, 9, 9, 8.5, 2.5, 2.5, 2.5, 2, 8, 1.5, 9, 9, 8.5, 2.5, 2.5, 2, 8, 1.5, 9, 8.5, 2.5, 2, 8, 1.5, 8.5, 8, 2]
 print(len(range_names), len(my_ranges), len(opponents_ranges), len(my_position_ips), len(opponent_pfrs), len(pot_sizes), len(my_investments))
 
-start_index = 0
-range_names = range_names[start_index:]
-my_ranges = my_ranges[start_index:]
-opponents_ranges = opponents_ranges[start_index:]
-my_position_ips = my_position_ips[start_index:]
-opponent_pfrs = opponent_pfrs[start_index:]
-pot_sizes = pot_sizes[start_index:]
-my_investments = my_investments[start_index:]
+
 
 
 input = sys.argv[1]
 if input == "1":
     board_type = "two-tone"
+    start_index = 7
+    range_names = range_names[start_index:]
+    my_ranges = my_ranges[start_index:]
+    opponents_ranges = opponents_ranges[start_index:]
+    my_position_ips = my_position_ips[start_index:]
+    opponent_pfrs = opponent_pfrs[start_index:]
+    pot_sizes = pot_sizes[start_index:]
+    my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
+    start_index = 2
+    range_names = range_names[start_index:]
+    my_ranges = my_ranges[start_index:]
+    opponents_ranges = opponents_ranges[start_index:]
+    my_position_ips = my_position_ips[start_index:]
+    opponent_pfrs = opponent_pfrs[start_index:]
+    pot_sizes = pot_sizes[start_index:]
+    my_investments = my_investments[start_index:]
 elif input == "3":
     board_type = "monotone"
+    start_index = 11
+    range_names = range_names[start_index:]
+    my_ranges = my_ranges[start_index:]
+    opponents_ranges = opponents_ranges[start_index:]
+    my_position_ips = my_position_ips[start_index:]
+    opponent_pfrs = opponent_pfrs[start_index:]
+    pot_sizes = pot_sizes[start_index:]
+    my_investments = my_investments[start_index:]
 print(input, board_type)
 
 
@@ -742,13 +759,13 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
         opponent_unraised_strategy = {
             'cat1': {1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9},
             'cat2': {1: 2, 2: 5, 3: 6, 4: 6, 5: 7, 6: 7, 7: 7},
-            'cat3': {1: 11 if opponent_pfr else 3,
-                     2: 11 if opponent_pfr else 3,
-                     3: 11 if opponent_pfr else 3,
-                     4: 11 if opponent_pfr else 3,
-                     5: 11 if opponent_pfr else 3,
-                     6: 11 if opponent_pfr else 3,  # Opponent is way more bluff-heavy when the pfr; semi-good for them.
-                     7: 11 if opponent_pfr else 3}, # skipping 4-10 for opponent's strategy (default in their strat)
+            'cat3': {1: 16 if opponent_pfr else 3,
+                     2: 16 if opponent_pfr else 3,
+                     3: 16 if opponent_pfr else 3,
+                     4: 16 if opponent_pfr else 3,
+                     5: 16 if opponent_pfr else 3,
+                     6: 16 if opponent_pfr else 3,  # Opponent is way more bluff-heavy when the pfr; semi-good for them.
+                     7: 16 if opponent_pfr else 3}, # skipping 4-10 for opponent's strategy (default in their strat)
         }
         opponent_strategy = {
             "oop_open": opponent_unraised_strategy,
@@ -1514,9 +1531,13 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
 
                 # Equity calculation
-                command = "source /Users/petermyers/Documents/pbots_calc-master/venv/bin/activate; /Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(my_hands_string, opponents_hands_string, final_flop_string)
-                process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
-                raw_equity = ast.literal_eval(process.communicate()[0].strip().decode("utf-8"))[0][1]
+                try:
+                    command = "source /Users/petermyers/Documents/pbots_calc-master/venv/bin/activate; /Users/petermyers/Documents/pbots_calc-master/python/calculator.sh {}:{} {}".format(my_hands_string, opponents_hands_string, final_flop_string)
+                    process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
+                    raw_equity = ast.literal_eval(process.communicate()[0].strip().decode("utf-8"))[0][1]
+                except:
+                    raw_equity = 0.50
+                    print("shell command failed")
 
 
 
@@ -1657,11 +1678,11 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
         cat3_level_2b = profits['2b'][max_profit_index]
 
 
-        # Try 8, 10, 11
+        # Try 8, 10, 16
 
-        for cat3_level_0b in [8, 10, 11]:
-            if last_profit < max_profit and cat3_level_0b == 10: # Skip 10 if 8 gave no improvement (but still continue to 11 for now)
-                continue
+        for cat3_level_0b in [8, 10, 15, 16]:
+            # if last_profit < max_profit and cat3_level_0b == 10: # Skip 10 if 8 gave no improvement (but still continue to 16 for now)
+            #     continue
             cat3_level_1b = math.ceil(cat3_level_0b * 0.66)
             cat3_level_2b = math.ceil(cat3_level_1b * 0.66)
 
