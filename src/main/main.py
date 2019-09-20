@@ -687,9 +687,9 @@ print(len(range_names), len(my_ranges), len(opponents_ranges), len(my_position_i
 input = sys.argv[1]
 if input == "1":
     board_type = "two-tone"
-    start_index = 12
-    i = 137
-    flops = all_flops[139:]
+    start_index = None
+    i = 0
+    flops = all_flops[0:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -699,9 +699,9 @@ if input == "1":
     my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
-    start_index = 7
-    i = 438
-    flops = all_flops[438:]
+    start_index = 19
+    i = 281
+    flops = all_flops[281:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -712,9 +712,9 @@ elif input == "2":
 
 elif input == "3":
     board_type = "monotone"
-    start_index = 18
-    i = 204
-    flops = all_flops[302:]
+    start_index = 26
+    i = 283
+    flops = all_flops[441:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
