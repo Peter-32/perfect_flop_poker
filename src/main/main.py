@@ -54,7 +54,7 @@ vsRFI_sb_vs_hj__call = "TT-66,T9s"
 vsRFI_sb_vs_co__call = "TT-55,KTs,QTs"
 vsRFI_sb_vs_bn__call = ""
 
-# These look similar
+# 3b originals (These are what I tried first and what I'll keep the opponent's strategy as)
 RFIvs3B_lj_vs_hjco_call = "JJ-77,AQs-AJs,KQs,QJs,JTs"
 RFIvs3B_lj_vs_bn_call = "JJ-77,AQs-AJs,KJs+,QJs,JTs,T9s"
 RFIvs3B_lj_vs_blinds_call = "JJ-66,AQs-ATs,KJs+,QJs,JTs,T9s"
@@ -62,6 +62,15 @@ RFIvs3B_hj_vs_ahead_call = "TT-66,AQs-ATs,KTs+,QTs+,JTs,T9s,AQo"
 RFIvs3B_co_vs_bn_call = "TT-66,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,AQo"
 RFIvs3B_co_vs_blinds_call = "TT-55,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
 RFIvs3B_bnsb_vs_ahead_call = "TT-33,AQs-A6s,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,54s,ATo+,KJo+,QJo"
+
+# 3b new (These are tightened ranges that I'll use for unprofitable 3b call situations)
+new_RFIvs3B_lj_vs_hjco_call = "JJ-77,AQs-AJs,KQs,QJs,JTs"
+new_RFIvs3B_lj_vs_bn_call = "JJ-77,AQs-AJs,KJs+,QJs,JTs,T9s"
+new_RFIvs3B_lj_vs_blinds_call = "JJ-66,AQs-ATs,KJs+,QJs,JTs,T9s"
+new_RFIvs3B_hj_vs_ahead_call = "TT-66,AQs-ATs,KTs+,QTs+,JTs,T9s,AQo"
+new_RFIvs3B_co_vs_bn_call = "TT-66,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,AQo"
+new_RFIvs3B_co_vs_blinds_call = "TT-55,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
+new_RFIvs3B_bnsb_vs_ahead_call = "TT-33,AQs-A6s,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,54s,ATo+,KJo+,QJo"
 
 
 # Input: range
