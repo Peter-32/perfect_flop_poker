@@ -696,9 +696,9 @@ print(len(range_names), len(my_ranges), len(opponents_ranges), len(my_position_i
 input = sys.argv[1]
 if input == "1":
     board_type = "two-tone"
-    start_index = None
-    i = 0
-    flops = all_flops[0:]
+    start_index = 40
+    i = 80
+    flops = all_flops[81:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
