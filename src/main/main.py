@@ -64,14 +64,8 @@ RFIvs3B_co_vs_blinds_call = "TT-55,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
 RFIvs3B_bnsb_vs_ahead_call = "TT-33,AQs-A6s,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,54s,ATo+,KJo+,QJo"
 
 # 3b new (These are tightened ranges that I'll use for unprofitable 3b call situations)
-new_RFIvs3B_lj_vs_hjco_call = "JJ-77,AQs-AJs,KQs,QJs,JTs"
-new_RFIvs3B_lj_vs_bn_call = "JJ-77,AQs-AJs,KJs+,QJs,JTs,T9s"
-new_RFIvs3B_lj_vs_blinds_call = "JJ-66,AQs-ATs,KJs+,QJs,JTs,T9s"
-new_RFIvs3B_hj_vs_ahead_call = "TT-66,AQs-ATs,KTs+,QTs+,JTs,T9s,AQo"
-new_RFIvs3B_co_vs_bn_call = "TT-66,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,AQo"
-new_RFIvs3B_co_vs_blinds_call = "TT-55,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
-new_RFIvs3B_bnsb_vs_ahead_call = "TT-33,AQs-A6s,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,54s,ATo+,KJo+,QJo"
-
+new_RFIvs3B_lj_vs_hjco_call = "JJ-TT,AQs"
+new_RFIvs3B_lj_vs_bn_call = "JJ-99,AQs,KQs"
 
 # Input: range
 m = {
