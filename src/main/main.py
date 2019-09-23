@@ -64,8 +64,8 @@ RFIvs3B_co_vs_blinds_call = "TT-55,AQs-A8s,KTs+,QTs+,JTs,T9s,98s,87s,AQo"
 RFIvs3B_bnsb_vs_ahead_call = "TT-33,AQs-A6s,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,54s,ATo+,KJo+,QJo"
 
 # 3b new (These are tightened ranges that I'll use for unprofitable 3b call situations)
-new_RFIvs3B_lj_vs_hjco_call = "JJ-TT,AQs"
-new_RFIvs3B_lj_vs_bn_call = "JJ-99,AQs,KQs"
+new_RFIvs3B_lj_vs_hjco_call = ""
+new_RFIvs3B_lj_vs_bn_call = ""
 
 # Input: range
 m = {
@@ -700,9 +700,9 @@ if input == "1":
     my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
-    start_index = 22
-    i = 163
-    flops = all_flops[163:]
+    start_index = 28
+    i = 56
+    flops = all_flops[56:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -736,7 +736,7 @@ for range_name, my_range, opponents_range, my_position_ip, opponent_pfr, pot_siz
 
     if is_first_run == False:
         i = 0
-        flops = all_flops
+        flops = all_flops[1:] # skip AAA
     else:
         is_first_run = False
 
