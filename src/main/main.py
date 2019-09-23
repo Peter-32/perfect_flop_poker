@@ -676,7 +676,7 @@ for rank1 in range(14,1,-1):
 
 
 range_names = ["00 LJ vs BB 3Bet", "01 LJ vs BB Call", "02 LJ vs HJ 3Bet", "03 LJ vs CO 3Bet", "04 LJ vs BN 3Bet", "05 LJ vs SB 3Bet", "06 LJ vs HJ Call", "07 LJ vs CO Call", "08 LJ vs BN Call", "09 LJ vs SB Call", "10 HJ vs BB 3Bet", "11 HJ vs BB Call", "12 HJ vs CO 3Bet", "13 HJ vs BN 3Bet", "14 HJ vs SB 3Bet", "15 HJ vs CO Call", "16 HJ vs BN Call", "17 HJ vs SB Call", "18 CO vs BB 3Bet", "19 CO vs BB Call", "20 CO vs BN 3Bet", "21 CO vs SB 3Bet", "22 CO vs BN Call", "23 CO vs SB Call", "24 BN vs BB 3Bet", "25 BN vs BB Call", "26 BN vs SB 3Bet", "27 SB vs BB 3Bet", "28 SB vs BB Call", "29 BB 3Bet vs LJ", "30 BB Call vs LJ", "31 HJ 3Bet vs LJ", "32 CO 3Bet vs LJ", "33 BN 3Bet vs LJ", "34 SB 3Bet vs LJ", "35 HJ Call vs LJ", "36 CO Call vs LJ", "37 BN Call vs LJ", "38 SB Call vs LJ", "39 BB 3Bet vs HJ", "40 BB Call vs HJ", "41 CO 3Bet vs HJ", "42 BN 3Bet vs HJ", "43 SB 3Bet vs HJ", "44 CO Call vs HJ", "45 BN Call vs HJ", "46 SB Call vs HJ", "47 BB 3Bet vs CO", "48 BB Call vs CO", "49 BN 3Bet vs CO", "50 SB 3Bet vs CO", "51 BN Call vs CO", "52 SB Call vs CO", "53 BB 3Bet vs BN", "54 BB Call vs BN", "55 SB 3Bet vs BN", "56 BB 3Bet vs SB", "57 BB Call vs SB",]
-my_ranges = [RFIvs3B_lj_vs_blinds_call, lj_rfi, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_bn_call, RFIvs3B_lj_vs_blinds_call, lj_rfi, lj_rfi, lj_rfi, lj_rfi, RFIvs3B_hj_vs_ahead_call, hj_rfi, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, hj_rfi, hj_rfi, hj_rfi, RFIvs3B_co_vs_blinds_call, co_rfi, RFIvs3B_co_vs_bn_call, RFIvs3B_co_vs_blinds_call, co_rfi, co_rfi, RFIvs3B_bnsb_vs_ahead_call, bn_rfi, RFIvs3B_bnsb_vs_ahead_call, RFIvs3B_bnsb_vs_ahead_call, sb_rfi, vsRFI_bb_vs_lj__raise, vsRFI_bb_vs_lj__call, vsRFI_hj_vs_lj__raise, vsRFI_co_vs_lj__raise, vsRFI_bn_vs_lj__raise, vsRFI_sb_vs_lj__raise, vsRFI_hj_vs_lj__call, vsRFI_co_vs_lj__call, vsRFI_bn_vs_lj__call, vsRFI_sb_vs_lj__call, vsRFI_bb_vs_hj__raise, vsRFI_bb_vs_hj__call, vsRFI_co_vs_hj__raise, vsRFI_bn_vs_hj__raise, vsRFI_sb_vs_hj__raise, vsRFI_co_vs_hj__call, vsRFI_bn_vs_hj__call, vsRFI_sb_vs_hj__call, vsRFI_bb_vs_co__raise, vsRFI_bb_vs_co__call, vsRFI_bn_vs_co__raise, vsRFI_sb_vs_co__raise, vsRFI_bn_vs_co__call, vsRFI_sb_vs_co__call, vsRFI_bb_vs_bn__raise, vsRFI_bb_vs_bn__call, vsRFI_sb_vs_bn__raise, vsRFI_bb_vs_sb__raise, vsRFI_bb_vs_sb__call]
+my_ranges = [RFIvs3B_lj_vs_blinds_call, lj_rfi, new_RFIvs3B_lj_vs_hjco_call, new_RFIvs3B_lj_vs_hjco_call, new_RFIvs3B_lj_vs_bn_call, RFIvs3B_lj_vs_blinds_call, lj_rfi, lj_rfi, lj_rfi, lj_rfi, RFIvs3B_hj_vs_ahead_call, hj_rfi, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, hj_rfi, hj_rfi, hj_rfi, RFIvs3B_co_vs_blinds_call, co_rfi, RFIvs3B_co_vs_bn_call, RFIvs3B_co_vs_blinds_call, co_rfi, co_rfi, RFIvs3B_bnsb_vs_ahead_call, bn_rfi, RFIvs3B_bnsb_vs_ahead_call, RFIvs3B_bnsb_vs_ahead_call, sb_rfi, vsRFI_bb_vs_lj__raise, vsRFI_bb_vs_lj__call, vsRFI_hj_vs_lj__raise, vsRFI_co_vs_lj__raise, vsRFI_bn_vs_lj__raise, vsRFI_sb_vs_lj__raise, vsRFI_hj_vs_lj__call, vsRFI_co_vs_lj__call, vsRFI_bn_vs_lj__call, vsRFI_sb_vs_lj__call, vsRFI_bb_vs_hj__raise, vsRFI_bb_vs_hj__call, vsRFI_co_vs_hj__raise, vsRFI_bn_vs_hj__raise, vsRFI_sb_vs_hj__raise, vsRFI_co_vs_hj__call, vsRFI_bn_vs_hj__call, vsRFI_sb_vs_hj__call, vsRFI_bb_vs_co__raise, vsRFI_bb_vs_co__call, vsRFI_bn_vs_co__raise, vsRFI_sb_vs_co__raise, vsRFI_bn_vs_co__call, vsRFI_sb_vs_co__call, vsRFI_bb_vs_bn__raise, vsRFI_bb_vs_bn__call, vsRFI_sb_vs_bn__raise, vsRFI_bb_vs_sb__raise, vsRFI_bb_vs_sb__call]
 opponents_ranges = [vsRFI_bb_vs_lj__raise, vsRFI_bb_vs_lj__call, vsRFI_hj_vs_lj__raise, vsRFI_co_vs_lj__raise, vsRFI_bn_vs_lj__raise, vsRFI_sb_vs_lj__raise, vsRFI_hj_vs_lj__call, vsRFI_co_vs_lj__call, vsRFI_bn_vs_lj__call, vsRFI_sb_vs_lj__call, vsRFI_bb_vs_hj__raise, vsRFI_bb_vs_hj__call, vsRFI_co_vs_hj__raise, vsRFI_bn_vs_hj__raise, vsRFI_sb_vs_hj__raise, vsRFI_co_vs_hj__call, vsRFI_bn_vs_hj__call, vsRFI_sb_vs_hj__call, vsRFI_bb_vs_co__raise, vsRFI_bb_vs_co__call, vsRFI_bn_vs_co__raise, vsRFI_sb_vs_co__raise, vsRFI_bn_vs_co__call, vsRFI_sb_vs_co__call, vsRFI_bb_vs_bn__raise, vsRFI_bb_vs_bn__call, vsRFI_sb_vs_bn__raise, vsRFI_bb_vs_sb__raise, vsRFI_bb_vs_sb__call, RFIvs3B_lj_vs_blinds_call, lj_rfi, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_hjco_call, RFIvs3B_lj_vs_bn_call, RFIvs3B_lj_vs_blinds_call, lj_rfi, lj_rfi, lj_rfi, lj_rfi, RFIvs3B_hj_vs_ahead_call, hj_rfi, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, RFIvs3B_hj_vs_ahead_call, hj_rfi, hj_rfi, hj_rfi, RFIvs3B_co_vs_blinds_call, co_rfi, RFIvs3B_co_vs_bn_call, RFIvs3B_co_vs_blinds_call, co_rfi, co_rfi, RFIvs3B_bnsb_vs_ahead_call, bn_rfi, RFIvs3B_bnsb_vs_ahead_call, RFIvs3B_bnsb_vs_ahead_call, sb_rfi]
 my_position_ips = [True, True, False, False, False, True, False, False, False, True, True, True, False, False, True, False, False, True, True, True, False, True, False, True, True, True, True, False, False, False, False, True, True, True, False, True, True, True, False, False, False, True, True, False, True, True, False, False, False, True, False, True, False, False, False, False, True, True]
 opponent_pfrs = [True, False, True, True, True, True, False, False, False, False, True, False, True, True, True, False, False, False, True, False, True, True, False, False, True, False, True, True, False, False, True, False, False, False, False, True, True, True, True, False, True, False, False, False, True, True, True, False, True, False, False, True, True, False, True, False, False, True]
@@ -685,14 +685,12 @@ my_investments = [9, 2.5, 9, 9, 9, 9, 2.5, 2.5, 2.5, 2.5, 9, 2.5, 9, 9, 9, 2.5, 
 print(len(range_names), len(my_ranges), len(opponents_ranges), len(my_position_ips), len(opponent_pfrs), len(pot_sizes), len(my_investments))
 
 
-
-
 input = sys.argv[1]
 if input == "1":
     board_type = "two-tone"
-    start_index = 40
-    i = 80
-    flops = all_flops[81:]
+    start_index = 2
+    i = 0
+    flops = all_flops[0:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
@@ -702,9 +700,9 @@ if input == "1":
     my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
-    start_index = 21
-    i = 299
-    flops = all_flops[299:]
+    start_index = 22
+    i = 163
+    flops = all_flops[163:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
