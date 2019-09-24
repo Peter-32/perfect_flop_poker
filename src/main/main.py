@@ -700,9 +700,9 @@ if input == "1":
     my_investments = my_investments[start_index:]
 elif input == "2":
     board_type = "rainbow"
-    start_index = 28
-    i = 56
-    flops = all_flops[56:]
+    start_index = 38
+    i = 0
+    flops = all_flops[1:]
     range_names = range_names[start_index:]
     my_ranges = my_ranges[start_index:]
     opponents_ranges = opponents_ranges[start_index:]
